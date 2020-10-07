@@ -137,7 +137,11 @@ desc(stock) <- paste(name, Sys.time())
 
 # SIMS
 sims[[name]] <- list(lh=par, code=name, stock=stock,
-	brp=brp, val=val, catch=catch(stock)*(1-sce$UR[[ur]]))
+	brp=brp, val=val, catch=catch(stock)*(1-sce$UR[[ur]]), 
+	index=index(FLIndex(index=stock@stock))*
+	  exp(rnorm(1, index(FLIndex(index=stock@stock))-
+	              index(FLIndex(index=stock@stock)), 0.1)), 
+	biomass=stock@stock)
 
 print(name)
 }
