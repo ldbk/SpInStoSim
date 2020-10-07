@@ -313,6 +313,6 @@ SOLESOL.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
 
 #Condition density according to stock simulations
 
-load(file = "out/0.6/simsDET1.2202010071358.RData")
+load(file = "data/simu_stock/out/0.6/simsDET1.2202010071545.RData")
 
 SP.tot <- sims[1][1]$SP_ID0_NR_ED0_SELF_UR0_TS60$index
