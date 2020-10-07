@@ -11,15 +11,15 @@ library(FLife)
 library(FLasher)
 
 source('functions.R')
+setwd("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock")
 
+dir.create("out/0.2/lh/input", recursive=TRUE)
+dir.create("out/0.2/lh/inputE")
+dir.create("out/0.2/lh/inputCV")
 
-dir.create("data/simu_stock/out/0.2/lh/input", recursive=TRUE)
-dir.create("data/simu_stock/out/0.2/lh/inputE")
-dir.create("data/simu_stock/out/0.2/lh/inputCV")
-
-dir.create("data/simu_stock/out/0.6/lh/input", recursive=TRUE)
-dir.create("data/simu_stock/out/0.6/lh/inputE")
-dir.create("data/simu_stock/out/0.6/lh/inputCV")
+dir.create("out/0.6/lh/input", recursive=TRUE)
+dir.create("out/0.6/lh/inputE")
+dir.create("out/0.6/lh/inputCV")
 
 # VARS
 set.seed(1234)
