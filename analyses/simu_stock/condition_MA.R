@@ -11,7 +11,7 @@ library(FLife)
 library(FLasher)
 
 source('functions.R')
-
+setwd("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock")
 
 dir.create("out/0.2/lh/input", recursive=TRUE)
 dir.create("out/0.2/lh/inputE")
@@ -138,9 +138,9 @@ desc(stock) <- paste(name, Sys.time())
 # SIMS
 sims[[name]] <- list(lh=par, code=name, stock=stock,
 	brp=brp, val=val, catch=catch(stock)*(1-sce$UR[[ur]]), 
-	index=index(FLIndex(index=stock@stock))*
-	  exp(rnorm(1, index(FLIndex(index=stock@stock))-
-	              index(FLIndex(index=stock@stock)), 0.1)), 
+	#index=index(FLIndex(index=stock@stock))*
+	 # exp(rnorm(1, index(FLIndex(index=stock@stock))-
+	  #            index(FLIndex(index=stock@stock)), 0.1)), 
 	biomass=stock@stock)
 
 print(name)
