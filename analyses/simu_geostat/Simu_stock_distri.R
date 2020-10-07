@@ -6,6 +6,10 @@ library(rgdal)
 library(raster)
 library(RGeostats)
 
+#install.packages("FLCore", repos="http://flr-project.org/R")
+library(FLCore)
+#devtools::install_github("flr/FLIfe", INSTALL_opts=c("--no-multiarch")) 
+library(FLBRP)
 
 #Data formatting for CGFS #####
 CGFS <- read.csv("data/simu_geostat/CGFS.csv", head=T)
@@ -145,7 +149,8 @@ CGFS.df0.red <- CGFS.df0 %>% filter(scientificname %in% c("Limanda limanda",
                                                       "Mullus surmuletus",
                                                       "Raja clavata",
                                                       "Raja montagui",
-                                                      "Raja undulata"))
+                                                      "Raja undulata",
+                                                      "Raja brachyura"))
 CGFS.df0.red$scientificname <- factor(CGFS.df0.red$scientificname)
 #####
 
@@ -183,20 +188,131 @@ nei1 <- neigh.create(ndim=2,type=0) #unique
 nei2 <- neigh.create(ndim=2,type=2,nmini=10,nmaxi=50,radius=1) # moving
 #####
 
-#Simulations#####
+#Simulations###
 
-#Dab
+#Dab#####
 db.CGFS <- db.locate(db,"Year","code")
 db.CGFS <- db.locate(db.CGFS,"Limanda limanda","z")
   
-# Vario moyen
+# Mean variogram
 vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
 #plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
 vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
 
+#Simulations
+LIMALIM.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
 
-#Simu
-Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
-       neigh= nei1,uc=NA,mean=0,
-       nbsim=40,nbtuba=1000,seed=42,radix="Dab_Simu")
+#Red mullet#####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Mullus surmuletus","z")
 
+# Mean variogram
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+MULLSUR.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+#Plaice#####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Pleuronectes platessa","z")
+
+# Mean variogram
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+PLEUPLA.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+#Raja brachyura####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Raja brachyura","z")
+
+# Mean variogram?
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+RAJABRA.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+#Raja clavata#####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Raja clavata","z")
+
+# Mean variogram
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+RAJACLA.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+#Raja montagui#####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Raja montagui","z")
+
+# Mean variogram
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+RAJAMON.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+#Raja undulata#####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Raja undulata","z")
+
+# Mean variogram
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+RAJAUND.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+#Sole#####
+db.CGFS <- db.locate(db,"Year","code")
+db.CGFS <- db.locate(db.CGFS,"Solea sola","z")
+
+# Mean variogram
+vg <- vario.calc(db.CGFS, lag=0.05, nlag=40,opt.code=1, tolcode=0) 
+#plot(vg,npairdw=T,inches=0.1,las=1,col=2,lwd=2)
+vg.mod <- model.auto(vario=vg, struct=c(1,2,3,4,5), npairdw=TRUE, title="", inches=.05)
+
+#Simulations
+SOLESOL.Sims <- simtub(dbin=duplicate(db.CGFS),dbout=grid,model=vg.mod,
+                       neigh= nei1,uc=NA,mean=0,
+                       nbsim=35,nbtuba=1000,seed=42)
+#####
+
+
+#Condition density according to stock simulations
+
+load(file = "out/0.6/simsDET1.2202010071358.RData")
+
+SP.tot <- sims[1][1]$SP_ID0_NR_ED0_SELF_UR0_TS60$index
