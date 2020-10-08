@@ -16,9 +16,6 @@ library(gplots)
 library(mvtnorm)
 ```
 
-```{r}
-
-```
 
 
 ```{r}
@@ -37,15 +34,47 @@ registerDoParallel(cl, cores = ncores_for_computation)
 
 ```
 
+
+```{r}
+load("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock/out/0.6/lh/simsSP202010071531.RData")
+simsSP<-sims
+load("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock/out/0.6/lh/simsLP202010071537.RData")
+simsLP<-sims
+load("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock/out/0.6/lh/simsDE202010071534.RData")
+simsDE<-sims
+```
+
+```{r}
+catch<-data.frame(Stock=rep(simsDE$DE_ID0_AR_ED0_SELF_UR0_TS60$code, length(sims[["DE_ID0_AR_ED0_SELF_UR0_TS60"]][["catch"]]@.Data[,,,,,1])), 
+                            yr=seq(1, length(sims[["DE_ID0_AR_ED0_SELF_UR0_TS60"]][["catch"]]@.Data[,,,,,1])), ct=sims[["DE_ID0_AR_ED0_SELF_UR0_TS60"]][["catch"]]@.Data[,,,,,1]
+                 # , bt=sims[["DE_ID0_AR_ED0_SELF_UR0_TS60"]][["biomass"]]@.Data[,,,,,1]
+                  )
+```
+
 ```{r}
 #-----------------------------------------
 # Required settings, File names ----
 #-----------------------------------------
 #set working directory in the good place 
-catch_file  <-  "catch_CMSY.csv" #  name of file containing "stock", "yr", "ct", and optional "bt"
-id_file     <-  "parameters_cmsy.csv"  #  name of file containing stock-specific info and settings for the analysis
+#catch_file  <-  "catch_CMSY.csv" #  name of file containing "stock", "yr", "ct", and optional "bt"
+catch_file<-catch
+#id_file     <-  "parameters_cmsy.csv"  #  name of file containing stock-specific info and settings for the analysis
+id_file<-parameters_cmsy <- parameter_cmsy <- read.csv("C:/Users/mamelot/Downloads/parameter_cmsy.csv")
 outfile     <- paste("Out_",format(Sys.Date(),format="%B%d%Y_"),id_file,sep="") # default name for output file
 
+```
+
+```{r}
+
+id_file$Stock<-catch$Stock[1]
+id_file$MinOfYear<-min(catch$yr)
+id_file$MaxOfYear<-max(catch$yr)
+id_file$StartYear<-min(catch$yr)
+id_file$EndYear<-max(catch$yr)
+id_file$M<-0.2
+id_file$Resilience<-"Low"
+id_file$btype<-"None"
+id_file$force.cmsy<-FALSE
 ```
 
 
@@ -53,16 +82,16 @@ outfile     <- paste("Out_",format(Sys.Date(),format="%B%d%Y_"),id_file,sep="") 
 #----------------------------------------
 # Select stock to be analyzed ----
 #----------------------------------------
-stocks      <-NA
+stocks      <-c("DE_ID0_AR_ED0_SELF_UR0_TS60")
 # If the input files contain more than one stock, specify below the stock to be analyzed
 # If the line below is commented out (#), all stocks in the input file will be analyzed
  # stocks <-  c("BOOPBOO_AL")  # "ZEUSFAB_AL"     # 
-stocks <-  c("RJC3a47d") 
-stocks <-  c("RJH3a47d") 
-stocks <-  c("RJN3a47d") 
-stocks <-  c("RJE3a47d") 
-stocks <-  c("RJM3a47d") 
-stocks <-  c("RJU3a47d") 
+#stocks <-  c("RJC3a47d") 
+#stocks <-  c("RJH3a47d") 
+#stocks <-  c("RJN3a47d") 
+#stocks <-  c("RJE3a47d") 
+#stocks <-  c("RJM3a47d") 
+#stocks <-  c("RJU3a47d") 
 ```
 
 
@@ -264,13 +293,13 @@ if(write.output==T){
 
 cat("Parallel processing will use",ncores_for_computation,"cores\n")
 # Read data change directory if needed
-setwd("N:/03_RECHERCHES_ETUDES/16-20_SUMARIS/data/CMSY")
-cdat         <- read.csv(catch_file, header=T, dec=".", stringsAsFactors = FALSE, sep=",")
-cinfo        <- read.csv(id_file, header=T, dec=".", stringsAsFactors = FALSE, sep=",")
-cat("Files", catch_file, ",", id_file, "read successfully","\n")
+#setwd("N:/03_RECHERCHES_ETUDES/16-20_SUMARIS/data/CMSY")
+#cdat         <- read.csv(catch_file, header=T, dec=".", stringsAsFactors = FALSE, sep=",")
+#cinfo        <- read.csv(id_file, header=T, dec=".", stringsAsFactors = FALSE, sep=",")
+#cat("Files", catch_file, ",", id_file, "read successfully","\n")
 
-#cdat<-O_Stocks_Catch_15_Med
-#cinfo<-O_Stocks_ID_19_Med
+cdat<-catch
+cinfo<-id_file
 
 ```
 
