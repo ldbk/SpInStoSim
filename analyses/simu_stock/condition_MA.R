@@ -29,7 +29,7 @@ iters <- 1 # No. of replicates for SR residuals
 iters <- 100
 vBiomass <- 1000 # Initial VBiomass
 margSD <- 0.2 # Marginal SD of AR1 process
-rsd <- 0.6 # Log SD of SR residuals
+rsd <- 0.2 # Log SD of SR residuals
 rho <- 0.6 # AR rho
 
 # SIMS & INPUT
