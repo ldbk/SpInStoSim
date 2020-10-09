@@ -48,12 +48,14 @@ for (i in unique(CGFS.df0$Year)){
   }
 }
 
+
+coast <- rgdal::readOGR("data/simu_geostat/FR_southENG_coast.gpkg")
+coast <- raster::crop(coast, raster::extent(-2.5,3,49,51.5))
+
 #####
 
 ## Maps of occurrence, selection of study species#####
 
-coast <- rgdal::readOGR("data/simu_geostat/FR_southENG_coast.gpkg")
-coast <- raster::crop(coast, raster::extent(-2.5,3,49,51.5))
 
 
 #Flatfish
