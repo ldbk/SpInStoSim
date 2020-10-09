@@ -13,20 +13,20 @@ library(FLasher)
 source('functions.R')
 setwd("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock")
 
-dir.create("out/0.2/lh/input", recursive=TRUE)
-dir.create("out/0.2/lh/inputE")
-dir.create("out/0.2/lh/inputCV")
+dir.create("out100/0.2/lh/input", recursive=TRUE)
+dir.create("out100/0.2/lh/inputE")
+dir.create("out100/0.2/lh/inputCV")
 
-dir.create("out/0.6/lh/input", recursive=TRUE)
-dir.create("out/0.6/lh/inputE")
-dir.create("out/0.6/lh/inputCV")
+dir.create("out100/0.6/lh/input", recursive=TRUE)
+dir.create("out100/0.6/lh/inputE")
+dir.create("out100/0.6/lh/inputCV")
 
 # VARS
 set.seed(1234)
 nyears <- 60 # Max. number of years
 #iters <- 250 # No. of replicates for SR residuals
 iters <- 1 # No. of replicates for SR residuals
-iters <- 5
+iters <- 100
 vBiomass <- 1000 # Initial VBiomass
 margSD <- 0.2 # Marginal SD of AR1 process
 rsd <- 0.6 # Log SD of SR residuals
@@ -162,7 +162,7 @@ sims <- lapply(sims, function(x) {
 	})
 
 # save RData
-save(sims, file=paste("out/", rsd, "/lh/sims", lh, format(Sys.time(), "%Y%m%d%H%M"),
+save(sims, file=paste("out100/", rsd, "/lh/sims", lh, format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""), compress="xz")
 
 # input
@@ -211,11 +211,11 @@ for (i in 1:iters) {
 # }}}
 
 # save RData
-save(input, file=paste("out/", rsd, "/lh/input", lh, format(Sys.time(), "%Y%m%d%H%M"),
+save(input, file=paste("out100/", rsd, "/lh/input", lh, format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""), compress="xz")
-save(inputE, file=paste("out/", rsd, "/lh/inputE", lh, format(Sys.time(), "%Y%m%d%H%M"),
+save(inputE, file=paste("out100/", rsd, "/lh/inputE", lh, format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""), compress="xz")
-save(inputE0, file=paste("out/", rsd, "/inputE0CV", format(Sys.time(), "%Y%m%d%H%M"),
+save(inputE0, file=paste("out100/", rsd, "/inputE0CV", format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""), compress="xz")
 
 rm(inputTMP)
@@ -303,7 +303,7 @@ gc()
 }
 
 # save RData
-save(sims, file=paste("out/", rsd, "/simsDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
+save(sims, file=paste("out100/", rsd, "/simsDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""))
 
 # input
@@ -321,7 +321,7 @@ input <- lapply(sims, function(x) {
 	})
 
 # save RData
-save(input, file=paste("out/", rsd, "/inputDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
+save(input, file=paste("out100/", rsd, "/inputDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""))
 
 # }}}
@@ -406,7 +406,7 @@ gc()
 }
 
 # save RData
-save(sims, file=paste("out/", rsd, "/simsDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
+save(sims, file=paste("out100/", rsd, "/simsDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""))
 
 # input
@@ -424,7 +424,7 @@ input <- lapply(sims, function(x) {
 	})
 
 # save RData
-save(input, file=paste("out/", rsd, "/inputDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
+save(input, file=paste("out100/", rsd, "/inputDET1.2", format(Sys.time(), "%Y%m%d%H%M"),
 	".RData", sep=""))
 
 # }}}
