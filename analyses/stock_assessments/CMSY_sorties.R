@@ -12,8 +12,8 @@ library(mvtnorm)
 # Some general settings ----
 #-----------------------------------------
 # set.seed(999) # use for comparing results between runs
-rm(list=ls(all=FALSE)) # clear previous variables etc
-options(digits=3) # displays all numbers with three significant digits as default
+#rm(list=ls(all=FALSE)) # clear previous variables etc
+#options(digits=3) # displays all numbers with three significant digits as default
 graphics.off() # close graphics windows from previous sessions
 FullSchaefer <- F    # initialize variable; automatically set to TRUE if enough abundance data are available
 n.chains     <- ifelse(detectCores() > 2,3,2) # set 3 chains in JAGS if more than 2 cores are available
@@ -31,36 +31,46 @@ simsDE<-sims
 id_file<-parameters_cmsy <- parameter_cmsy <- read.csv("C:/Users/mamelot/Downloads/parameter_cmsy.csv")
 outfile     <- paste("Out_",format(Sys.Date(),format="%B%d%Y_"),id_file,sep="") 
 
-n_stock<-96
-nsimu<-1
-table_outputs_CMSY<- data.frame( stock_id=NA, year=NA, b_bmsy=NA, b_bmsyUpper=NA, b_bmsyLower=NA, 
-                                 b_bmsy_iq25, b_bmsy_iq75, seed=NA, convergence=NA, n_iterations=NA,
-                                 effective_sample_size=NA, method_id=NA, catch=NA, stock=NA, 
-                                 bmsy_true=NA, harvest=NA, iter=NA, LH=NA, ID=NA, ED=NA, 
-                                 SEL=NA, TS=NA, AR=NA, UR=NA, b_bmsy_true=NA, sigmaR=NA, sigmaC=NA)
+nstock<-96
+nsimu<-25
+table_outputs_CMSY<- data.frame( stock_id=rep(NA,144000), year=rep(NA,144000), b_bmsy=rep(NA,144000),
+                                 b_bmsyUpper=rep(NA,144000), b_bmsyLower=rep(NA,144000), 
+                                 b_bmsy_iq25=rep(NA,144000), b_bmsy_iq75=rep(NA,144000), 
+                                 seed=rep(NA,144000), convergence=rep(NA,144000), n_iterations=rep(NA,144000),
+                                 effective_sample_size=rep(NA,144000), method_id=rep(NA,144000), 
+                                 catch=rep(NA,144000), stock=rep(NA,144000), 
+                                 bmsy_true=rep(NA,144000), harvest=rep(NA,144000), iter=rep(NA,144000),
+                                 LH=rep(NA,144000), ID=rep(NA,144000), ED=rep(NA,144000), 
+                                 SEL=rep(NA,144000), TS=rep(NA,144000), AR=rep(NA,144000),
+                                 UR=rep(NA,144000), b_bmsy_true=rep(NA,144000),
+                                 sigmaR=rep(NA,144000), sigmaC=rep(NA,144000))
+lmin<-1
 
 for (i in 1:nstock){
-  stock<-simsDE[[i]]
-  name_in<-stock$code
+ 
   for (j in 1:nsimu){
-    
+    stock<-simsDE[[i]]
+    name_in<-stock$code
+    graphics.off() # close graphics windows from previous sessions
+    lmin<-lmin
+    lmax<-lmin+length( stock$catch@.Data[1,,1,1,1,j])-1
     ### attribution inputs in the data frame 
-    table_outputs_CMSY$year<-stock$catch$year
-    table_outputs_CMSY$stock_id<-rep(name_in, length(stock$catch$year))
-    table_outputs_CMSY$method_id<-rep("CMSY", length(stock$catch$year))
-    table_outputs_CMSY$catch<-stock$catch@.Data[,,,,,j]
-    table_outputs_CMSY$stock<-stock$biomass@.Data[,,,,,j]
-    table_outputs_CMSY$bmsy_true<-stock$brp@refpts[2,5]
-    table_outputs_CMSY$harvest<-stock$brp@refpts[2,1]
-    table_outputs_CMSY$iter<-rep(j,length(stock$catch$year))
-    table_outputs_CMSY$LH<-rep(stock$val[1],length(stock$catch$year))
-    table_outputs_CMSY$ID<-rep(stock$val[2],length(stock$catch$year))
-    table_outputs_CMSY$ED<-rep(stock$val[4],length(stock$catch$year))
-    table_outputs_CMSY$SEL<-rep(stock$val[5],length(stock$catch$year))
-    table_outputs_CMSY$TS<-rep(stock$val[7],length(stock$catch$year))
-    table_outputs_CMSY$AR<-rep(stock$val[3],length(stock$catch$year))
-    table_outputs_CMSY$UR<-rep(stock$val[6],length(stock$catch$year))
-    table_outputs_CMSY$b_bmsy_true<-table_outputs_CMSY$stock/table_outputs_CMSY$bmsy_true
+    table_outputs_CMSY$year[lmin:lmax]<-seq(1, length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$stock_id[lmin:lmax]<-rep(name_in, length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$method_id[lmin:lmax]<-rep("CMSY", length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$catch[lmin:lmax]<-stock$catch@.Data[,,,,,j]
+    table_outputs_CMSY$stock[lmin:lmax]<-stock$biomass@.Data[,,,,,j]
+    table_outputs_CMSY$bmsy_true[lmin:lmax]<-rep(stock$brp@refpts[2,5],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$harvest[lmin:lmax]<-rep(stock$brp@refpts[2,1],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$iter[lmin:lmax]<-rep(j,length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$LH[lmin:lmax]<-rep(stock$val[1],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$ID[lmin:lmax]<-rep(stock$val[2],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$ED[lmin:lmax]<-rep(stock$val[4],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$SEL[lmin:lmax]<-rep(stock$val[5],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$TS[lmin:lmax]<-rep(stock$val[7],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$AR[lmin:lmax]<-rep(stock$val[3],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$UR[lmin:lmax]<-rep(stock$val[6],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_CMSY$b_bmsy_true[lmin:lmax]<-table_outputs_CMSY$stock[lmin:lmax]/table_outputs_CMSY$bmsy_true[lmin:lmax]
     
     
     name_out<-c(name_in, j)
@@ -93,17 +103,17 @@ for (i in 1:nstock){
     n.new        <- n # initialize n.new
     ni           <- 3 # iterations for r-k-startbiomass combinations, to test different variability patterns; no improvement seen above 3
     nab          <- 2 # default=5; minimum number of years with abundance data to run BSM
-    mgraphs      <- T # set to TRUE to produce additional graphs for management
-    e.creep.line <- T # set to TRUE to display uncorrected CPUE in biomass graph
-    kobe.plot    <- T # HW set to TRUE so produce additional kobe status plot 
+    mgraphs      <- F # set to TRUE to produce additional graphs for management
+    e.creep.line <- F # set to TRUE to display uncorrected CPUE in biomass graph
+    kobe.plot    <- F # HW set to TRUE so produce additional kobe status plot 
     save.plots   <- F # set to TRUE to save graphs to JPEG files
-    close.plots  <- T # set to TRUE to close on-screen plots after they are saved, to avoid "too many open devices" error in batch-processing
+    close.plots  <- F # set to TRUE to close on-screen plots after they are saved, to avoid "too many open devices" error in batch-processing
     write.output <- F # set to TRUE if table with results in output file is wanted; expects years 2004-2014 to be available
     write.pdf    <- F # set to TRUE if PDF output of results is wanted. See more instructions at end of code.
     force.cmsy   <- F # set to TRUE if CMSY results are to be preferred over BSM results
     select.yr    <- NA # option to display F, B, F/Fmsy and B/Bmsy for a certain year; default NA
     
-    if(write.pdf == FALSE) save.plots=TRUE
+    if(write.pdf == FALSE) save.plots=FALSE
     
     
     #----------------------------------------------
@@ -1164,9 +1174,13 @@ for (i in 1:nstock){
       }  
     }
       #stop parallel processing clusters
-      stopCluster(cl)
-      stopImplicitCluster()
-    
-    
+      
+      
+      table_outputs_CMSY$b_bmsy[lmin:lmax]<-B.Bmsy
+      table_outputs_CMSY$b_bmsyLower[lmin:lmax]<-lcl.B.Bmsy
+      table_outputs_CMSY$b_bmsyUpper[lmin:lmax]<-ucl.B.Bmsy
+    lmin<-lmax+1
   }
 }
+stopCluster(cl)
+stopImplicitCluster()
