@@ -27,16 +27,16 @@ for ( j in 1:25){ # iteration
   
   vast_format[[i]][[j]][["example_sphe"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.sphe"]][["x1"]],n_ts), 
                       long=rep(Res.red[[stock_name]][[iteration]][["sample.sphe"]][["x2"]],n_ts),
-                                 year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts))
+                                 year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
   vast_format[[i]][[j]][["example_gaus"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.gaus"]][["x1"]],n_ts), 
                               long=rep(Res.red[[stock_name]][[iteration]][["sample.gaus"]][["x2"]],n_ts),
-                              year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts))
+                              year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
  vast_format[[i]][[j]][["example_cub"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.cub"]][["x1"]],n_ts), 
                               long=rep(Res.red[[stock_name]][[iteration]][["sample.cub"]][["x2"]],n_ts),
-                              year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts))
+                              year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
  vast_format[[i]][[j]][["example_expo"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.expo"]][["x1"]],n_ts), 
                               long=rep(Res.red[[stock_name]][[iteration]][["sample.expo"]][["x2"]],n_ts),
-                              year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts))
+                              year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
   lindex_min<-1
   lindex_max<-60  
 for (l in 1:60){ #year 
@@ -53,9 +53,41 @@ lindex<-lindex_max+n_ts
 } #stock 
 
 
-indices<-list(NA,NA) ## list first level stock, second level iteration, thirs level variograms 
 
+example<-list(vast_format[[1]][[1]][["example_sphe"]],vast_format[[1]][[1]][["example_gaus"]])
+indices<-list(NA,NA)
 foreach(i = 1:2) %dopar%
 library(FishStatsUtils)
 library(VAST)
 library(doParallel)
+for(i in 1:1){
+  # Make settings (turning off bias.correct to save time for example)
+  settings = make_settings( n_x=90, 
+                            Region="user", 
+                            purpose="index2", 
+                            strata.limits= data.frame(STRATA = "All_areas"), 
+                            bias.correct=FALSE )
+  
+  m_ll<-matrix(data=NA, nrow=90, ncol=3)
+  m_ll[,1]<-example[[i]][["lat"]][1:90]
+  m_ll[,2]<-example[[i]][["long"]][1:90]
+  m_ll[,3]<-rep(1,90)
+  colnames(m_ll)<-c('Lat', 'Lon','Area_km2')
+  
+
+  # Run model
+  fit = fit_model( settings=settings, 
+                   Lat_i=example[[i]][["lat"]], 
+                   Lon_i=example[[i]][["long"]], 
+                   t_i=example[[i]][["year"]], 
+                   c_i=rep(0,5400), 
+                   b_i=example[[i]][["survey"]], 
+                   a_i=example[[i]][["s_a"]]
+                   #,observations_LL =m_ll
+                   ,input_grid=m_ll
+                   #v_i=example[[i]]$sampling_data[,'Vessel'] 
+                   )
+  
+  indices[[i]]<-fit$Report$Index_ctl[1,,1]
+}
+stopCluster()
