@@ -20,42 +20,23 @@ library(jagsUI)
 ```
 
 ```{r}
-prior<-read.delim2("Priors2705_3sp_Y03Y03Y03_K11008150_1q.csv", sep=",")
-```
-
-
-
-```{r}
-#determine number of species and groups based on file with priors
-E<-nrow(prior) # Nombre d'espèces du modèle
-NbI<-E #Nombre d'espèces avec données d'indices d'abondance
 Years<-2009:2018
 N<-length(Years) #Nombre d'années avec des données de captures)
-Nbq<-length(unique(prior$Groupe_q)) #Nombre de groupes q différents taken from priors
 ```
 
 ```{r}
-#####
-# Taux de croissance intrinsèque r
-#####
-# l valeur moyenne du r d'une espèce peut être estimée par la méthode des matrices de Leslie
-# cette méthode requiert plusieurs paramètres
-# un script permettant ce calcul à partir des paramètres a été mis au point
-mean_r<-as.vector(as.numeric(paste(prior$r)))
-# valeur moyenne du r présente dans le tableau des paramètres des priors
-sd_r<-as.vector(as.numeric(paste(prior$Sd_r)))
-# autre paramètre de la distribution normale associée à la valeur moyenne du r présente dans le même tableau
+mean_r<-mu_r
+sd_r<-sig_r
 r_a = mean_r*(mean_r*(1-mean_r)/(sd_r^2)-1) # transformation des paramètres de distribution normale en paramètre de distribution beta
 r_b = (1-mean_r)*(mean_r*(1-mean_r)/(sd_r^2)-1) # transformation des paramètres de distribution normale en paramètre de distribution beta
-
 ```
 
 ```{r}
 #####
 # Biomasse relative initiale Yinit
 #####
-mean_Yinit<-as.vector(as.numeric(paste(prior$Yinit))) # valeur moyenne de la distribution normale de Y0 présente dans le tableau des paramètres des priors
-sd_Yinit<-as.vector(as.numeric(paste(prior$Sd_Yinit)))# autre paramètre de la distribution normale de Y0 présente dans le tableau des paramètres des priors
+mean_Yinit<-mu_Y
+sd_Yinit<-sig_Y
 Yinit_a = mean_Yinit*(mean_Yinit*(1-mean_Yinit)/(sd_Yinit^2)-1) # transformation des paramètres de distribution normale de Y0 en paramètre de distribution beta
 Yinit_b = (1-mean_Yinit)*(mean_Yinit*(1-mean_Yinit)/(sd_Yinit^2)-1) # transformation des paramètres de distribution normale de Y0 en paramètre de distribution beta
 ```
@@ -64,109 +45,36 @@ Yinit_b = (1-mean_Yinit)*(mean_Yinit*(1-mean_Yinit)/(sd_Yinit^2)-1) # transforma
 #####
 # Capacité d'accueil K
 #####
-Kinf<-as.vector(as.numeric(paste(prior$Kinf)))# limite inférieure de la distribution uniforme de K présente dans le tableau des paramètres des priors
-Ksup<-as.vector(as.numeric(paste(prior$Ksup))) # limite supérieure de la distribution uniforme de K présente dans le tableau des paramètres des priors
-```
-
-```{r}
-#####
-# Groupe de capturabilité
-#####
-Gr_q<-as.vector(as.numeric(paste(prior$Groupe_q))) # Mis en vecteur des numéros de groupes de capturabilité q auquel est associé chaque espèce
+Kinf<-Kmin
+Ksup<-Kmax
 ```
 
 ```{r}
 #####
 # Erreur d'observation
 #####
-# Le paramètre de l'erreur d'observartion des indices de biomasse tau est à estimer à partir des indices de chaque espèce
-# Dans le modèle multispécifique développé en parallèle de ce script, les erreurs d'observation des indices suivent une loi LogNormale
-# Selon cette loi, la distribution du tau a été estimée par un script annexe (de la même façon que le script Leslie de r)
-# Ce script tau utilise la valeur des données d'indices et la variance associé pour calculer le CV des indices d'une espèce et par une relation le tau correspondant au CV et aux données
-#tau_a<-as.vector(as.numeric(paste(prior$tau_a)))# premier paramètre de distribution gamma de tau présente dans le tableau des paramètres des priors
 tau_a<-400
 tau_b<-1
-
-#tau_b<-as.vector(as.numeric(paste(prior$tau_b))) # second paramètre de distribution gamma de tau présente dans le tableau des paramètres des priors
-#save priors with  transformed parameters for r (beta distribution) and Yinit
-
-tauL_a<-as.vector(as.numeric(paste(prior$tauL_a)))
-tauL_b<-as.vector(as.numeric(paste(prior$tauL_b)))
-tauD_a<-as.vector(as.numeric(paste(prior$tauD_a)))
-tauD_b<-as.vector(as.numeric(paste(prior$tauD_b)))
 
 prior$r_a=r_a
 prior$r_b=r_b
 prior$Yinit_a=Yinit_a
 prior$Yinit_b=Yinit_b
-write.table(prior,"Priors2111.csv",sep=";",quote=FALSE,row.names=FALSE)
 ```
 
 ```{r}
-group_q<-read.delim2("group_q9.csv", sep=",")
-q_a<-as.numeric(paste(group_q$mean_beta))
-q_b<-as.numeric(paste(group_q$sd_beta))
+
+q_a<-mean_q
+q_b<-sig_q
 ```
 
 ```{r}
 #####
 # Débarquements toutes espèces confondues
 #####
-# Le tableau des données de débarquements communes à toutes les espèces du modèle peut être obtenue en réalisant la somme des captures des différentes espèces
-# Selon les hypothèses, il peut falloir inclure à cette somme les données de captures relatives aux espèces non identifiées
-# Les données sommées doivent couvrir les mêmes années à moins de supposer que les données sans années les espèces n'étaient pas identifiées par exemple 
-# Le tableau doit comprendre une colonne avec les années et une colonne avec les captures
-capt<-read.csv("Captures1006_3sp_100p.csv", sep=",")
-Cobs<-capt$Captures[capt$Annees%in%Years] #sélection des données de captures du tableau à partir de l'année voulue et sur la période désirée (N)
-Lobs<-capt$Captures[capt$Annees%in%Years]
-Dobs<-capt$Rejets[capt$Annees%in%Years]
-
+Cobs<-capt$Captures[capt$Annees%in%Years] 
 ```
 
-```{r}
-####
-# Débarquements par espèce
-#####
-# Préparer table avec proportions par espèce pour dernières années
-landSp1<-read.csv("DebarquementRaiesManche1006_3sp.csv", sep=",")
-#select species and years
-landSp=landSp1[landSp1$Species%in%prior$Espece&landSp1$Annee%in%c(2009:max(landSp1$Annee)),]
-landSp=merge(landSp,data.frame(Annee=sort(unique(landSp$Annee)),Tot=tapply(landSp$Debarquement,landSp$Annee,sum)))
-landSp$Per=landSp$Debarquement/landSp$Tot
-landSp=tapply(landSp$Per,list(landSp$Species,landSp$Annee),sum)
-
-
-discSp=landSp1[landSp1$Species%in%prior$Espece&landSp1$Annee%in%c(2009:max(landSp1$Annee)),]
-discSp=merge(discSp,data.frame(Annee=sort(unique(discSp$Annee)),Tot=tapply(discSp$Rejets,discSp$Annee,sum)))
-discSp$Per=discSp$Rejets/discSp$Tot
-discSp=tapply(discSp$Per,list(discSp$Species,discSp$Annee),sum)
-
-```
-
-```{r}
-#ordonner especes comme dans prior
-Especes=data.frame(Espece=row.names(landSp))
-Especes$OrdL=1:nrow(Especes)
-Ord=merge(Especes,prior[,c("Espece", "NoEsp")],by="Espece")
-Ord=Ord[order(Ord$OrdL),]
-landSp=landSp[order(Ord$NoEsp),]
-discSp=discSp[order(Ord$NoEsp),]
-```
-
-```{r}
-####
-# Np nombre d'années avec proportion d'espèces dans débarquements
-####
-Np=ncol(landSp)
-```
-
-```{r}
-###
-# IndexP index pour années avec proportions dans débarquements
-###
-IndexP=seq(1:length(Years))[Years%in%colnames(landSp)]
-IndexD=seq(1:length(Years))[Years%in%colnames(discSp)]
-```
 
 ```{r}
 ######################
@@ -175,50 +83,9 @@ IndexD=seq(1:length(Years))[Years%in%colnames(discSp)]
 # Le tableau des indices de contient doit contenir :
 # _ une colonne année
 # _ une colonne d'indices de biomasse par espèce
-indices<-read.csv("Indices_0207_3sp_SHORT.csv", sep=",")
+
 I=t(indices[,-1])
 ```
-
-```{r}
-#ordonner especes comme dans prior
-Especes=data.frame(Espece=row.names(I))
-Especes$OrdI=1:nrow(Especes)
-Ord=merge(Especes,prior[,c("Espece", "NoEsp")],by="Espece")
-#reorder as in index data 
-Ord=Ord[order(Ord$OrdI),]
-I=I[order(Ord$NoEsp),]  #matrice d'indice avec NA pour années sans données
-lengthSansNA=function(x){ length(x[!is.na(x)])}
-```
-
-```{r}
-#####
-# Nf nombre d'années d'indice pour chaque espèce
-#####
-Nf<-apply(I,1,lengthSansNA)
-```
-
-```{r}
-#####
-# Index
-#####
-# L'index va servir à faire le lien entre les données de captures "capt" et les indices "I" fournies au modèle
-# Il fournit les numéros de ligne correspondant aux années des données d'indices de chaque espèce
-#mettre en relation années avec indices avec années avec débarquements
-YIndSurv<-seq(1,length(Years))[Years%in%indices$Annee]
-Index=matrix(rep(YIndSurv,each=E), dim(I))
-Index[is.na(I)]=NA
-```
-
-```{r}
-#reformater indices de biomasse et index pour années pour avoir les NA à gauche
-temp=BioI=matrix(NA,nrow=nrow(I),ncol=ncol(I))
-for(e in 1:E){
- BioI[e,1:Nf[e]]=I[e,!is.na(I[e,])]
- temp[e,1:Nf[e]]=Index[e,!is.na(Index[e,])]
-} 
-IndexI=temp; I=BioI;rm(temp);rm(BioI);rm(Index)
-```
-
 
 
 ```{r}
@@ -232,21 +99,12 @@ IndexI=temp; I=BioI;rm(temp);rm(BioI);rm(Index)
 # Cette liste correspond à l'ensemble des données qui vont être utilisées pour l'inférence bayésienne
 # Elle doit comprendre : les données de captures et d'indices, l'index les liant, les paramètres de distributions des priors et tous vecteurs ou constantes présents dans le modèle
 # Il faut bien vérifier que les noms des variables dans la liste "data" correspondent bien aux noms utilisés dans le modèle multispécifique
-Data<-list("E"=as.numeric(E),
-           "N"=as.numeric(N),
-           "NbI"=as.numeric(NbI),"Nbq"=Nbq,
-           #"Cobs"=Cobs,
-           "Lobs"=Lobs,
-           "Dobs"=Dobs,
-           "I"=as.matrix(I),"IndexI"=as.matrix(IndexI),
-           "Nf"=as.numeric(Nf),
-		   "PropL"=landSp,"PropD"=discSp,
-          "IndexP"=IndexP,"IndexD"=IndexD, 
-		   "Np"=Np,
+Data<-list("N"=as.numeric(N),
+           "Cobs"=Cobs,
+           "I"=as.matrix(I),
            "r_a"=as.numeric(r_a),"r_b"=as.numeric(r_b),
            "Yinit_a"=as.numeric(Yinit_a),"Yinit_b"=as.numeric(Yinit_b),
            "Kinf"=as.numeric(Kinf),"Ksup"=as.numeric(Ksup),
-           "Grq"=as.numeric(Gr_q),
            "tau_a"=tau_a,"tau_b"=tau_b,
            "q_a"=q_a,"q_b"=q_b
           )
@@ -255,22 +113,15 @@ Data<-list("E"=as.numeric(E),
 #####
 # Liste des paramètres dont les résultats à la sortie du modèle doivent être enregistrés
 # Tout comme la liste des données, les noms doivent être les mêmes que dans le modèle
-parameters<-c("B", "Ipred","Csp", "Lsp", "Dsp", "r","Yinit","K","q","TauPropL", "TauPropD"
-             , "PropL", "PropD"
-              , "sigma","tau2", "MSY", "Bmsy", "Ratio")
+parameters<-c("B", "Ipred","Csp", "r","Yinit","K","q",
+               "sigma","tau2", "MSY", "Bmsy")
 ```
 initialisation des trois chaînes 
 ```{r}
 ## inits needed for K, r, sigma2, tau2,q, Yinit
-inits1<-list("K"=as.vector(rep(40000,3)), "r"=rep(0.1,3),"q"=rep(0.0003,1), "Yinit"=rep(0.5,3),invSigma2=400, invTau2=rep(400,1), "invTauPropL"=rep(400,3), "invTauPropD"=rep(400,3)
-             #, "invTauLsp"=rep(400,3), "invTauDsp"=rep(400,3)
-             )
-inits2<-list("K"=rep(50000,3), "r"=rep(0.105,3),"q"=rep(0.0003,1), "Yinit"=rep(0.5,3), invSigma2=400, invTau2=rep(400,1), "invTauPropL"=rep(400,3), "invTauPropD"=rep(400,3)
-             #, "invTauLsp"=rep(400,3), "invTauDsp"=rep(400,3)
-             )
-inits3<-list("K"=rep(60000,3), "r"=rep(0.11,3),"q"=rep(0.0003,1), "Yinit"=rep(0.5,3), invSigma2=400, invTau2=rep(400,1), "invTauPropL"=rep(400,3), "invTauPropD"=rep(400,3)
-             #, "invTauLsp"=rep(400,3), "invTauDsp"=rep(400,3)
-             )
+inits1<-list("K"=as.vector(rep(40000,3)), "r"=rep(0.1,3),"q"=rep(0.0003,1), "Yinit"=rep(0.5,3),invSigma2=400, invTau2=rep(400,1))
+inits2<-list("K"=rep(50000,3), "r"=rep(0.105,3),"q"=rep(0.0003,1), "Yinit"=rep(0.5,3), invSigma2=400, invTau2=rep(400,1))
+inits3<-list("K"=rep(60000,3), "r"=rep(0.11,3),"q"=rep(0.0003,1), "Yinit"=rep(0.5,3), invSigma2=400, invTau2=rep(400,1))
 inits<-list(inits1,inits2,inits3)
 ```
 Initialisation du parallèle processing
@@ -279,7 +130,7 @@ cl <- makeCluster(3, type = "SOCK")
 ```
 Transformation des inits pour leur lecture par cluster
 ```{r}
-inits2 <- jags.fit(Data, parameters, "1505bayes.txt", inits, 3,
+inits2 <- jags.fit(Data, parameters, "1911bayes.txt", inits, 3,
  n.adapt = 0, n.update = 0, n.iter = 0)$state(internal = TRUE)
 ```
 Conditionnement de l'écriture des sorties du modèle 
@@ -309,13 +160,6 @@ Application du parallèle processing à ce modèle puis cloture des clusters
  res1 <- as.mcmc.list(lapply(res, as.mcmc))
 stopCluster(cl)
 ```
-
-
-
-
-
-
-
 
 
 ```{r}
