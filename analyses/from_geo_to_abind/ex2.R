@@ -5,8 +5,7 @@
 #setwd( "D:/UW Hideaway (SyncBackFree)/AFSC/2019-03 -- Making helper functions for VAST" )
 
 # Load package
-library(VAST)
-library(doParallel)
+
 
 registerDoParallel(cores = 2)
 
@@ -16,12 +15,14 @@ registerDoParallel(cores = 2)
 example<-list(load_example( data_set="EBS_pollock" ),load_example( data_set="EBS_pollock" ))
 indices<-list(NA,NA)
 foreach(i = 1:2) %dopar%
-  
+library(FishStatsUtils)
+library(VAST)
+library(doParallel)
   for(i in 1:2){
     # Make settings (turning off bias.correct to save time for example)
     settings = make_settings( n_x=100, 
                               Region=example[[i]]$Region, 
-                              purpose="index", 
+                              purpose="index2", 
                               strata.limits=example[[i]]$strata.limits, 
                               bias.correct=FALSE )
     

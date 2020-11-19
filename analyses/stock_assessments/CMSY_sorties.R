@@ -49,7 +49,7 @@ lmin<-1
 for (i in 1:nstock){
  
   for (j in 1:nsimu){
-    stock<-simsDE[[i]]
+    stock<-simsLP[[i]]
     name_in<-stock$code
     graphics.off() # close graphics windows from previous sessions
     lmin<-lmin
