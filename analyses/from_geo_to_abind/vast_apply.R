@@ -39,14 +39,14 @@ for ( j in 1:25){ # iteration
                               year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
   lindex_min<-1
   lindex_max<-90  
-for (l in 1:90){ #year 
+for (l in 1:n_ts){ #year 
   simul<-paste(c("Simu.V1.S",l), collapse="")
   vast_format[[i]][[j]][["example_sphe"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]]
   vast_format[[i]][[j]][["example_gaus"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]]
   vast_format[[i]][[j]][["example_cub"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]]
   vast_format[[i]][[j]][["example_expo"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.expo"]][[simul]]
 lindex_min<-lindex_max+1
-lindex<-lindex_max+90
+lindex_max<-lindex_max+90
 
 } # year
 } #iteration
@@ -76,7 +76,8 @@ for(i in 1:imax){
  # m_ll<-matrix(data=NA, nrow=90, ncol=2)
   m_ll[,1]<-example[[i]][["lat"]][1:90]
   m_ll[,2]<-example[[i]][["lat"]][1:90]
-  m_ll[,3]<-rep(c(400,1200,400,1200,3600,1200,400,1200,400)/3, each=10)
+  m_ll[,3]<-rep(c(400,1200,400,1200,3600,1200,400,1200,400)/10, each=10)
+  m_ll[,3]<-rep(1,90)
   colnames(m_ll)<-c('Lat', 'Lon','Area_km2')
   #colnames(m_ll)<-c('Lat', 'Lon')
   
@@ -93,7 +94,8 @@ for(i in 1:imax){
                    ,input_grid=m_ll
                    #v_i=example[[i]]$sampling_data[,'Vessel'] 
                    ,Aniso=FALSE, 
-                   FieldConfig= c("Omega1"=0, "Epsilon1"=0, "Omega2"=1, "Epsilon2"=1))
+                   ObsModel=c("PosDist"=2, 'Link'=0),
+                   FieldConfig= c("Omega1"=1, "Epsilon1"=1, "Omega2"=1, "Epsilon2"=1))
                  
   
   indices[[i]]<-fit$Report$Index_ctl[1,,1]

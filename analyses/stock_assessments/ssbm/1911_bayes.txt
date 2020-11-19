@@ -1,0 +1,95 @@
+
+model{  
+	
+#N : Nombre d'années totales
+#Nf : Nombre années d'indices
+#######################
+####### PRIORS ########
+#######################
+
+r~dbeta(r_a,r_b)T(0.01,) #intrinsec growth rate 
+Yinit~dbeta(Yinit_a,Yinit_b)T(0.001,) #initial relative biomass
+K~dunif(Kinf,Ksup) #Carrying capacity 
+
+q~dunif(q_a,q_b)
+
+## Process error
+invSigma2~dgamma(400,1) #prior for process error
+sigma<-sqrt(1/invSigma2) #standard deviation 
+sigma2<-1/invSigma2
+invTau2~dgamma(tau_a,tau_b) #observation error for biomass indices 
+tau2<-1/invTau2
+
+invTauPropC~dgamma(400,1) ## error in the proportion between species in catches
+TauPropC<-1/invTauPropC	
+
+########################## 
+### Dynamique du stock ###
+##########################
+
+##########################################
+## Changement de variable Y[t]=B[t]/K##
+##########################################
+uplim<-1+3*sigma	# Superior limit for relative  Yields
+
+Ymed[1]<-Yinit #Initial state for species e
+isCensored[1] ~ dinterval(Y[1],uplim) # truncated distribution 
+Y[1]~dnorm(Ymed[1],invSigma2)T(0,)
+
+Ipred[1]<-q*Y[1]*K #Biomass indice 
+B[1]<-K*Y[1] #biomasse
+
+###########################
+## Population Dynamics ####
+###########################
+
+for (t in 1:N) #modèle pour années 2 à N+1
+{
+
+ep[t]<-pow(CV,2)+1
+invep[t]<-1/log(ep[t])
+LogCobs[t]<-log(Cobs[t])
+Csp[t]~dlnorm(LogCobs[t],invep[t])T(0,)
+Cesp[t]<-Csp[t]/K
+
+Ymed[t+1]<-(r+1)*Y[t]-(r*Y[t])*Y[t]-Cesp[t] # yield 
+isCensored[t+1] ~ dinterval(Y[t+1],uplim)
+Y[t+1]~dnorm(Ymed[t+1],invSigma2)T(0,)
+
+Ipred[t+1]<-q*Y[t+1]*K #biomass indices
+B[t+1]<-K*Y[t+1] #biomasse
+
+}
+
+##################################
+###Biomass indices simulation ####
+##################################
+
+mm<-mean(Ipred) 
+ssd<-sd(Ipred)
+
+for (f in 1:Nf[i])   #années avec indices
+{
+#Standardisation des I prédits par le modèle 
+StdIpred[f]<-(Ipred[f]-mm)/ssd
+} 
+
+#####################################
+## Observations indices de biomasse##
+#####################################
+
+for (f in 1:Nf[i])   #années avec indices
+{	#début f
+I[f]~dnorm(Ipred[f],invTau2)
+} #fin f
+
+#####################################################
+############### Reference points ####################
+#####################################################
+
+for( i in 1:E){
+MSY[i]<-r[i]*K[i]/4
+Bmsy[i]<-K[i]/2
+}
+
+} 

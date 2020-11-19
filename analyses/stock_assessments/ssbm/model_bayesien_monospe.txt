@@ -1,0 +1,45 @@
+#FULL run model
+model
+{
+#######PRIORS########
+#N: Total number of years
+#Nf: number of years with research vessel CPUE
+
+Y0~dbeta(17,4)T(0.001,) #Initial relative biomass
+K~dunif(20000,100000) #Carrying capacity
+r~dbeta(34,300)T(0.01,) #Intrinsic growth rate
+q~dunif(0.01,0.5) #Catchability
+ytau2~dgamma(400,1) #1/Process error variance
+CV<-0.2
+sigma2<-1/ytau2
+uplim<-1+(3*sigma2)#Upper bound for truncated normal distribution
+itau2~dgamma(44,2)
+tau2<-1/itau2
+
+###POPULATION DYNAMIC###
+Ymed[1]<-Y0
+for (t in 1:N)
+{
+Lmin[t]<-2*Cobs[t]/K #Lower bound of the truncated normal ditribution
+Y[t]~dnorm(Ymed[t],ytau2)T(Lmin[t],uplim)
+ep[t]<-pow(CV,2)+1
+invep[t]<-1/log(ep[t])
+LogCobs[t]<-log(Cobs[t])
+C[t]~dlnorm(LogCobs[t],invep[t])T(0,)
+Ymed[t+1]<-(r+1)*Y[t]-(r*Y[t])*Y[t]-C[t]/K
+Imed[t]<-q*Y[t]*K
+Bmed[t]<-K*Y[t]
+}
+
+Y[N+1]~dnorm(Ymed[N+1],ytau2)T(Lmin[N],uplim)
+Imed[N+1]<-q*Y[N+1]*K
+Bmed[N+1]<-K*Y[N+1]
+
+for (i in 1:Nf)
+{
+LogImed[i]<-log(Index[i])
+I[i]~dlnorm(LogImed[i],itau2)
+}
+
+MSY<-r*K/4
+} #end
