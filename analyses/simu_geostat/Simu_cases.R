@@ -24,12 +24,10 @@ RGeostats::plot(mod.cub)
 RGeostats::plot(mod.expo)
 
 
-sim.sphe<- simtub(model=mod.sphe,dbout=grid.db,nbsim=60,nbtuba=1000)
-limit <- Rfast::nth(sim.sphe@items[,4], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-sim.sphe@items[,4][sim.sphe@items[,4]<limit] <- 0
-sim.gaus<- simtub(model=mod.gaus,dbout=grid.db,nbsim=60,nbtuba=1000)
-sim.cub<- simtub(model=mod.cub,dbout=grid.db,nbsim=60,nbtuba=1000)
-sim.expo<- simtub(model=mod.expo,dbout=grid.db,nbsim=60,nbtuba=1000)
+sim.sphe<- simtub(model=mod.sphe,dbout=grid.db,nbsim=60,nbtuba=100)
+sim.gaus<- simtub(model=mod.gaus,dbout=grid.db,nbsim=60,nbtuba=100)
+sim.cub<- simtub(model=mod.cub,dbout=grid.db,nbsim=60,nbtuba=100)
+sim.expo<- simtub(model=mod.expo,dbout=grid.db,nbsim=60,nbtuba=100)
 
 RGeostats::plot(sim.sphe,name="Simu.V1.S1",pos.legend=1,zlim=c(-4,4))
 RGeostats::plot(sim.gaus,name="Simu.V1.S1",pos.legend=1,zlim=c(-4,4))
@@ -54,25 +52,25 @@ cub <- sim.cub@items
 expo <- sim.expo@items
 
 #Generate 1/3rd of 0 values
-for (l in 4:63){
-  limit <- Rfast::nth(sphe[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-  sphe[,l][sphe[,l]<limit] <- 0
-  
-  limit <- Rfast::nth(gaus[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-  gaus[,l][gaus[,l]<limit] <- 0
-  
-  limit <- Rfast::nth(cub[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-  cub[,l][cub[,l]<limit] <- 0
-  
-  limit <- Rfast::nth(expo[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-  expo[,l][expo[,l]<limit] <- 0
-}
+# for (l in 4:63){
+#   limit <- Rfast::nth(sphe[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
+#   sphe[,l][sphe[,l]<limit] <- 0
+#   
+#   limit <- Rfast::nth(gaus[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
+#   gaus[,l][gaus[,l]<limit] <- 0
+#   
+#   limit <- Rfast::nth(cub[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
+#   cub[,l][cub[,l]<limit] <- 0
+#   
+#   limit <- Rfast::nth(expo[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
+#   expo[,l][expo[,l]<limit] <- 0
+# }
 
 #Get only positive values
-sphe[,c(4:63)] <- abs(sphe[,c(4,63)])
-gaus[,c(4:63)] <- abs(gaus[,c(4,63)])
-cub[,c(4:63)] <- abs(cub[,c(4,63)])
-expo[,c(4:63)] <- abs(expo[,c(4,63)])
+sphe[,c(4:63)] <- sweep(sphe[,c(4:63)],2,abs(apply(sphe[,c(4:63)],2, min)),"+")
+gaus[,c(4:63)] <- sweep(gaus[,c(4:63)],2,abs(apply(gaus[,c(4:63)],2, min)),"+")
+cub[,c(4:63)] <- sweep(cub[,c(4:63)],2,abs(apply(cub[,c(4:63)],2, min)),"+")
+expo[,c(4:63)] <- sweep(expo[,c(4:63)],2,abs(apply(expo[,c(4:63)],2, min)),"+")
 
 #Get biomass sum on simulations
 f.s <-biomass$X1/colSums(sphe[,c(4:63)])
@@ -121,9 +119,16 @@ mod.gaus <- model.create("Gaussian",range=.2,sill=1)
 mod.cub <- model.create("Cubic",range=.2,sill=1)
 mod.expo <- model.create("Exponential",range=.2,sill=1)
 
+#Sample area
+r <- raster(ncol=100, nrow=100,xmn=0, xmx=1, ymn=0, ymx=1)
+names(r) <- "stratum"
+values(r) <- rep(c(1:9),times=c(400,1200,400,1200,3600,1200,400,1200,400))
+plot(r)
+
+
 load("data/simu_stock/out100/0.6/lh/simsDE202010091026.RData")
 
-
+tic()
 for (i in 1:length(sims)){
   
   Iter.list = vector('list', Iter)
@@ -135,10 +140,10 @@ for (i in 1:length(sims)){
     biomass <- (as.integer(sims[[1]][[7]]@.Data[,,,,,j]))
     
     #Simulation of the time series
-    sim.sphe<- simtub(model=mod.sphe,dbout=grid.db,nbsim=60,nbtuba=1000)
-    sim.gaus<- simtub(model=mod.gaus,dbout=grid.db,nbsim=60,nbtuba=1000)
-    sim.cub<- simtub(model=mod.cub,dbout=grid.db,nbsim=60,nbtuba=1000)
-    sim.expo<- simtub(model=mod.expo,dbout=grid.db,nbsim=60,nbtuba=1000)
+    sim.sphe<- simtub(model=mod.sphe,dbout=grid.db,nbsim=60,nbtuba=100)
+    sim.gaus<- simtub(model=mod.gaus,dbout=grid.db,nbsim=60,nbtuba=100)
+    sim.cub<- simtub(model=mod.cub,dbout=grid.db,nbsim=60,nbtuba=100)
+    sim.expo<- simtub(model=mod.expo,dbout=grid.db,nbsim=60,nbtuba=100)
     
     # Extract from db
     sphe <- sim.sphe@items
@@ -146,26 +151,11 @@ for (i in 1:length(sims)){
     cub <- sim.cub@items
     expo <- sim.expo@items
     
-    #Generate 1/3rd of 0 values
-    for (l in 4:63){
-      limit <- Rfast::nth(sphe[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-      sphe[,l][sphe[,l]<limit] <- 0
-      
-      limit <- Rfast::nth(gaus[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-      gaus[,l][gaus[,l]<limit] <- 0
-      
-      limit <- Rfast::nth(cub[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-      cub[,l][cub[,l]<limit] <- 0
-      
-      limit <- Rfast::nth(expo[,l], 3334, descending = F) #Create 0 values (1/3rd of total samples)
-      expo[,l][expo[,l]<limit] <- 0
-    }
-    
     #Get only positive values
-    sphe[,c(4:63)] <- abs(sphe[,c(4,63)])
-    gaus[,c(4:63)] <- abs(gaus[,c(4,63)])
-    cub[,c(4:63)] <- abs(cub[,c(4,63)])
-    expo[,c(4:63)] <- abs(expo[,c(4,63)])
+    sphe[,c(4:63)] <- sweep(sphe[,c(4:63)],2,abs(apply(sphe[,c(4:63)],2, min)),"+")
+    gaus[,c(4:63)] <- sweep(gaus[,c(4:63)],2,abs(apply(gaus[,c(4:63)],2, min)),"+")
+    cub[,c(4:63)] <- sweep(cub[,c(4:63)],2,abs(apply(cub[,c(4:63)],2, min)),"+")
+    expo[,c(4:63)] <- sweep(expo[,c(4:63)],2,abs(apply(expo[,c(4:63)],2, min)),"+")
     
     #Standardize with biomass
     f.s <-biomass/colSums(sphe[,c(4:63)])
@@ -178,25 +168,21 @@ for (i in 1:length(sims)){
     cub[,c(4:63)] <- t(t(cub[,c(4:63)])*f.c)
     expo[,c(4:63)] <- t(t(expo[,c(4:63)])*f.e)
     
-    #Sample area
-    r <- raster(ncol=100, nrow=100,xmn=0, xmx=1, ymn=0, ymx=1)
-    names(r) <- "stratum"
-    values(r) <- rep(c(1:9),times=c(400,1200,400,1200,3600,1200,400,1200,400))
-    plot(r)
-    
+    #Sample
     sample <- sampleStratified(r, size=10)
     sample.sphe <- sphe[sample[,1],]
     sample.gaus <- gaus[sample[,1],]
     sample.cub <- cub[sample[,1],]
     sample.expo <- expo[sample[,1],]
     
-    Iter.list[[j]] <- list(Spheric=sphe,Gaussian=gaus,Cubic=cub,Exponential=expo,Strata=r,Sample_spherical=sample.sphe,Sample_gaussian=sample.gaus,Sample_cubic=sample.cub,Sample_exponential=sample.expo)
+    Iter.list[[j]] <- list(Spheric=sphe,Gaussian=gaus,Cubic=cub,Exponential=expo,Sample_spherical=sample.sphe,Sample_gaussian=sample.gaus,Sample_cubic=sample.cub,Sample_exponential=sample.expo)
     Iter.list.red[[j]] <- list(Sample_spherical=sample.sphe,Sample_gaussian=sample.gaus,Sample_cubic=sample.cub,Sample_exponential=sample.expo)
   }
   Res[[i]] <- Iter.list
   Res.red[[i]] <- Iter.list.red
 
 }
+toc()
 names(Res) <- names(sims)
 names(Res.red) <- names(sims)
 save(Res, "data/simu_geostat/Samples.RData")
