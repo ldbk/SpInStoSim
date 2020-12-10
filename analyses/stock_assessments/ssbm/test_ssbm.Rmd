@@ -20,13 +20,15 @@ library(jagsUI)
 ```
 
 ```{r}
-Years<-2009:2018
+stock_name<-names(Res.red[i])
+n_ts<-as.numeric(paste(str_sub(stock_name,-2,-1)))
+Years<-seq(1:n_ts)
 N<-length(Years) #Nombre d'années avec des données de captures)
 ```
 
 ```{r}
-mean_r<-mu_r
-sd_r<-sig_r
+mean_r<-0.3 ### ? biblio 
+sd_r<-0.1 ### ? biblio 
 r_a = mean_r*(mean_r*(1-mean_r)/(sd_r^2)-1) # transformation des paramètres de distribution normale en paramètre de distribution beta
 r_b = (1-mean_r)*(mean_r*(1-mean_r)/(sd_r^2)-1) # transformation des paramètres de distribution normale en paramètre de distribution beta
 ```
@@ -35,8 +37,8 @@ r_b = (1-mean_r)*(mean_r*(1-mean_r)/(sd_r^2)-1) # transformation des paramètres
 #####
 # Biomasse relative initiale Yinit
 #####
-mean_Yinit<-mu_Y
-sd_Yinit<-sig_Y
+mean_Yinit<-0.5 ### mean value 
+sd_Yinit<-0.2 ## not constraining prior 
 Yinit_a = mean_Yinit*(mean_Yinit*(1-mean_Yinit)/(sd_Yinit^2)-1) # transformation des paramètres de distribution normale de Y0 en paramètre de distribution beta
 Yinit_b = (1-mean_Yinit)*(mean_Yinit*(1-mean_Yinit)/(sd_Yinit^2)-1) # transformation des paramètres de distribution normale de Y0 en paramètre de distribution beta
 ```
@@ -45,8 +47,8 @@ Yinit_b = (1-mean_Yinit)*(mean_Yinit*(1-mean_Yinit)/(sd_Yinit^2)-1) # transforma
 #####
 # Capacité d'accueil K
 #####
-Kinf<-Kmin
-Ksup<-Kmax
+Kinf<-max(sims$stock_name$catch)
+Ksup<-20*max(sims$stock_name$catch)
 ```
 
 ```{r}
@@ -55,24 +57,18 @@ Ksup<-Kmax
 #####
 tau_a<-400
 tau_b<-1
-
-prior$r_a=r_a
-prior$r_b=r_b
-prior$Yinit_a=Yinit_a
-prior$Yinit_b=Yinit_b
 ```
 
 ```{r}
-
-q_a<-mean_q
-q_b<-sig_q
+q_a<-0.000001
+q_b<-0.99
 ```
 
 ```{r}
 #####
 # Débarquements toutes espèces confondues
 #####
-Cobs<-capt$Captures[capt$Annees%in%Years] 
+Cobs<-sims$stock_name$catch
 ```
 
 
@@ -83,8 +79,10 @@ Cobs<-capt$Captures[capt$Annees%in%Years]
 # Le tableau des indices de contient doit contenir :
 # _ une colonne année
 # _ une colonne d'indices de biomasse par espèce
-
-I=t(indices[,-1])
+# i stock 
+#j iteration 
+# k variograms 
+I<-indices[[i]][[j]][[k]]
 ```
 
 

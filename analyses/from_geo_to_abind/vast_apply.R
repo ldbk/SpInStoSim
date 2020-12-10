@@ -1,5 +1,6 @@
 
-registerDoParallel(cores = 2)
+
+ registerDoParallel(cores = 2)
 
 # load data set
 # see `?load_example` for list of stocks with example data 
@@ -16,7 +17,6 @@ for (i in 1:96){ #stock
 for ( j in 1:25){ # iteration
   
   iteration<-paste(c("It.",j), collapse="")
- 
   example_sphe<-data.frame()
   example_gaus<-data.frame()
   example_cub<-data.frame()
