@@ -41,6 +41,11 @@ for ( j in 1:25){ # iteration
   lindex_max<-90  
 for (l in 1:n_ts){ #year 
   simul<-paste(c("Simu.V1.S",l), collapse="")
+  Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["sample.expo"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.expo"]][[simul]])[1:10]]<-0
+  
   vast_format[[i]][[j]][["example_sphe"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]]
   vast_format[[i]][[j]][["example_gaus"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]]
   vast_format[[i]][[j]][["example_cub"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]]
