@@ -1,5 +1,5 @@
 
-ncores<-2
+ncores<-4
 registerDoParallel(cores = ncores) # to change depending of your cores 
 
 # load data set
@@ -79,7 +79,7 @@ example1<-c(example1, example)
 
 na<-list(NA)
 indices<-rep(na, nsize)
-imax<-2 # change depending of number of cores
+imax<-4 # change depending of number of cores
 foreach(i = 1:imax) %dopar%
   
 library(FishStatsUtils)
