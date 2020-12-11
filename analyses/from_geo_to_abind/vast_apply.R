@@ -1,22 +1,27 @@
 
-
- registerDoParallel(cores = 2)
+ncores<-2
+registerDoParallel(cores = ncores) # to change depending of your cores 
 
 # load data set
-# see `?load_example` for list of stocks with example data 
-# that are installed automatically with `FishStatsUtils`. 
+load("~/DOC/AUTRE/git/SpInStoSim/data/simu_geostat/SamplesDE_red.RData") #adapt the path 
+
 library(stringr)
 
-vast_format<-vector("list",96)
-for (i in 1:96){ #stock 
-  
+fsize<-1 #first stock to consider
+size<-48 #last stock to consider
+nsize<-48 #total number of stocks
+
+vast_format<-vector("list",nsize)
+
+for (i in fsize:size){ #stock 
   stock_name<-names(Res.red[i])
   n_ts<-as.numeric(paste(str_sub(stock_name,-2,-1)))
   vast_format[[i]]<-vector("list",25)
  
 for ( j in 1:25){ # iteration
   
-  iteration<-paste(c("It.",j), collapse="")
+ # iteration<-paste(c("It.",j), collapse="")
+  iteration<-j
   example_sphe<-data.frame()
   example_gaus<-data.frame()
   example_cub<-data.frame()
@@ -25,31 +30,31 @@ for ( j in 1:25){ # iteration
   vast_format[[i]][[j]]<-list(example_sphe,example_gaus,example_cub,example_expo)
   names(vast_format[[i]][[j]])=c("example_sphe", "example_gaus", "example_cub", "example_expo")
   
-  vast_format[[i]][[j]][["example_sphe"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.sphe"]][["x1"]],n_ts), 
-                      long=rep(Res.red[[stock_name]][[iteration]][["sample.sphe"]][["x2"]],n_ts),
+  vast_format[[i]][[j]][["example_sphe"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["Sample_spherical"]][["x1"]],n_ts), 
+                      long=rep(Res.red[[stock_name]][[iteration]][["Sample_spherical"]][["x2"]],n_ts),
                                  year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
-  vast_format[[i]][[j]][["example_gaus"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.gaus"]][["x1"]],n_ts), 
-                              long=rep(Res.red[[stock_name]][[iteration]][["sample.gaus"]][["x2"]],n_ts),
+  vast_format[[i]][[j]][["example_gaus"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["Sample_gaussian"]][["x1"]],n_ts), 
+                              long=rep(Res.red[[stock_name]][[iteration]][["Sample_gaussian"]][["x2"]],n_ts),
                               year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
- vast_format[[i]][[j]][["example_cub"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.cub"]][["x1"]],n_ts), 
-                              long=rep(Res.red[[stock_name]][[iteration]][["sample.cub"]][["x2"]],n_ts),
+ vast_format[[i]][[j]][["example_cub"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["Sample_cubic"]][["x1"]],n_ts), 
+                              long=rep(Res.red[[stock_name]][[iteration]][["Sample_cubic"]][["x2"]],n_ts),
                               year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
- vast_format[[i]][[j]][["example_expo"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["sample.expo"]][["x1"]],n_ts), 
-                              long=rep(Res.red[[stock_name]][[iteration]][["sample.expo"]][["x2"]],n_ts),
+ vast_format[[i]][[j]][["example_expo"]]<-data.frame(lat=rep(Res.red[[stock_name]][[iteration]][["Sample_exponential"]][["x1"]],n_ts), 
+                              long=rep(Res.red[[stock_name]][[iteration]][["Sample_exponential"]][["x2"]],n_ts),
                               year=rep(1:n_ts, each=90), survey=rep(NA,90*n_ts),s_a=rep(1,90*n_ts))
   lindex_min<-1
   lindex_max<-90  
 for (l in 1:n_ts){ #year 
   simul<-paste(c("Simu.V1.S",l), collapse="")
-  Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]])[1:10]]<-0
-  Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]])[1:10]]<-0
-  Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]])[1:10]]<-0
-  Res.red[[stock_name]][[iteration]][["sample.expo"]][[simul]][order(Res.red[[stock_name]][[iteration]][["sample.expo"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["Sample_spherical"]][[simul]][order(Res.red[[stock_name]][[iteration]][["Sample_spherical"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["Sample_gaussian"]][[simul]][order(Res.red[[stock_name]][[iteration]][["Sample_gaussian"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["Sample_cubic"]][[simul]][order(Res.red[[stock_name]][[iteration]][["Sample_cubic"]][[simul]])[1:10]]<-0
+  Res.red[[stock_name]][[iteration]][["Sample_exponential"]][[simul]][order(Res.red[[stock_name]][[iteration]][["Sample_exponential"]][[simul]])[1:10]]<-0
   
-  vast_format[[i]][[j]][["example_sphe"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.sphe"]][[simul]]
-  vast_format[[i]][[j]][["example_gaus"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.gaus"]][[simul]]
-  vast_format[[i]][[j]][["example_cub"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.cub"]][[simul]]
-  vast_format[[i]][[j]][["example_expo"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["sample.expo"]][[simul]]
+  vast_format[[i]][[j]][["example_sphe"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["Sample_spherical"]][[simul]]
+  vast_format[[i]][[j]][["example_gaus"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["Sample_gaussian"]][[simul]]
+  vast_format[[i]][[j]][["example_cub"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["Sample_cubic"]][[simul]]
+  vast_format[[i]][[j]][["example_expo"]][["survey"]][lindex_min:lindex_max]<-Res.red[[stock_name]][[iteration]][["Sample_exponential"]][[simul]]
 lindex_min<-lindex_max+1
 lindex_max<-lindex_max+90
 
@@ -62,14 +67,25 @@ tt<-expand.grid(t,t)
 times<-c(400,1200,400,1200,3600,1200,400,1200,400)/3
 r <- rep(c(1:9), times=c(400,1200,400,1200,3600,1200,400,1200,400))
 
-example<-list(vast_format[[1]][[1]][["example_sphe"]],vast_format[[1]][[1]][["example_gaus"]])
-indices<-list(NA,NA)
-imax<-2
-foreach(i = 1:2) %dopar%
+example1<-list()
+for( i in 1:nsize){
+example<-list(vast_format[[i]][[1]][["example_sphe"]],
+              vast_format[[i]][[1]][["example_gaus"]], 
+vast_format[[i]][[1]][["example_cub"]],
+vast_format[[i]][[1]][["example_expo"]])
+
+example1<-c(example1, example)
+}
+
+na<-list(NA)
+indices<-rep(na, nsize)
+imax<-2 # change depending of number of cores
+foreach(i = 1:imax) %dopar%
+  
 library(FishStatsUtils)
 library(VAST)
 library(doParallel)
-for(i in 1:imax){
+for(i in 1:nsize){
   # Make settings (turning off bias.correct to save time for example)
   settings = make_settings( n_x=100, 
                             Region="user", 
@@ -79,8 +95,8 @@ for(i in 1:imax){
   
   m_ll<-matrix(data=NA, nrow=90, ncol=3)
  # m_ll<-matrix(data=NA, nrow=90, ncol=2)
-  m_ll[,1]<-example[[i]][["lat"]][1:90]
-  m_ll[,2]<-example[[i]][["lat"]][1:90]
+  m_ll[,1]<-example1[[i]][["lat"]][1:90]
+  m_ll[,2]<-example1[[i]][["lat"]][1:90]
   m_ll[,3]<-rep(c(400,1200,400,1200,3600,1200,400,1200,400)/10, each=10)
   m_ll[,3]<-rep(1,90)
   colnames(m_ll)<-c('Lat', 'Lon','Area_km2')
@@ -89,12 +105,12 @@ for(i in 1:imax){
 
   # Run model
   fit = fit_model( settings=settings, 
-                   Lat_i=example[[i]][["lat"]], 
-                   Lon_i=example[[i]][["long"]], 
-                   t_i=example[[i]][["year"]], 
-                   c_i=rep(0,5400), 
-                   b_i=example[[i]][["survey"]], 
-                   a_i=example[[i]][["s_a"]]
+                   Lat_i=example1[[i]][["lat"]], 
+                   Lon_i=example1[[i]][["long"]], 
+                   t_i=example1[[i]][["year"]], 
+                   c_i=rep(0,90*length(unique(example1[[i]][["year"]]))), 
+                   b_i=example1[[i]][["survey"]], 
+                   a_i=example1[[i]][["s_a"]]
                    #,observations_LL =m_ll
                    ,input_grid=m_ll
                    #v_i=example[[i]]$sampling_data[,'Vessel'] 
@@ -105,4 +121,8 @@ for(i in 1:imax){
   
   indices[[i]]<-fit$Report$Index_ctl[1,,1]
 }
+save(indices, file="indices_1_48_DE.Rdata")
+#save(indices, file="indices_49_96_DE.Rdata")
+#save(indices, file="indices_1_48_LP.Rdata")
+#save(indices, file="indices_49_96_LP.Rdata") #choose the good one
 stopCluster()
