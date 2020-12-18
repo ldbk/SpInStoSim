@@ -84,14 +84,15 @@ example1<-c(example1, example)
 }
 
 na<-list(NA)
-indices<-rep(na, 40)
+nstocks<-4 # change depending of the number of stocks (stocks*iteration*vario)
+indices<-rep(na, nstocks)
 imax<-2 # change depending of number of cores
 foreach(i = 1:2) %dopar%
   
 library(FishStatsUtils)
 library(VAST)
 library(doParallel)
-for(i in 1:40){
+for(i in 1:nstocks){
   # Make settings (turning off bias.correct to save time for example)
   settings = make_settings( n_x=100, 
                             Region="user", 
@@ -101,8 +102,8 @@ for(i in 1:40){
   
   m_ll<-matrix(data=NA, nrow=90, ncol=3)
  # m_ll<-matrix(data=NA, nrow=90, ncol=2)
-  m_ll[,1]<-example1[[i]][["lat"]][1:90]
-  m_ll[,2]<-example1[[i]][["lat"]][1:90]
+  m_ll[,1]<-example2[[i]][["long"]][1:90]
+  m_ll[,2]<-example2[[i]][["lat"]][1:90]
   m_ll[,3]<-rep(c(400,1200,400,1200,3600,1200,400,1200,400)/10, each=10)
   m_ll[,3]<-rep(1,90)
   colnames(m_ll)<-c('Lat', 'Lon','Area_km2')
@@ -110,13 +111,13 @@ for(i in 1:40){
   
 
   # Run model
-  fit = try(fit_model( settings=settings, 
-                   Lat_i=example1[[i]][["lat"]], 
-                   Lon_i=example1[[i]][["long"]], 
+  fit16 = try(fit_model( settings=settings, 
+                   Lat_i=example2[[i]][["lat"]], 
+                   Lon_i=example2[[i]][["long"]], 
                    t_i=example1[[i]][["year"]], 
                    c_i=rep(0,90*length(unique(example1[[i]][["year"]]))), 
-                   b_i=example1[[i]][["survey"]], 
-                   a_i=example1[[i]][["s_a"]]
+                   b_i=example2[[i]][["survey"]], 
+                   a_i=example2[[i]][["s_a"]]
                    #,observations_LL =m_ll
                    ,input_grid=m_ll
                    #v_i=example[[i]]$sampling_data[,'Vessel'] 
