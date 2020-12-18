@@ -1,5 +1,5 @@
 
-ncores<-4
+ncores<-2
 registerDoParallel(cores = ncores) # to change depending of your cores 
 
 # load data set
@@ -8,8 +8,8 @@ load("~/DOC/AUTRE/git/SpInStoSim/data/simu_geostat/SamplesDE_red.RData") #adapt 
 library(stringr)
 
 fsize<-1 #first stock to consider
-size<-48 #last stock to consider
-nsize<-48 #total number of stocks
+size<-10 #last stock to consider
+nsize<-10 #total number of stocks
 
 vast_format<-vector("list",nsize)
 
@@ -67,25 +67,31 @@ tt<-expand.grid(t,t)
 times<-c(400,1200,400,1200,3600,1200,400,1200,400)/3
 r <- rep(c(1:9), times=c(400,1200,400,1200,3600,1200,400,1200,400))
 
-example1<-list()
+
+example2<-list()
 for( i in 1:nsize){
-example<-list(vast_format[[i]][[1]][["example_sphe"]],
-              vast_format[[i]][[1]][["example_gaus"]], 
-vast_format[[i]][[1]][["example_cub"]],
-vast_format[[i]][[1]][["example_expo"]])
+  example1<-list()
+  for( j in 1:25){
+example<-list(vast_format[[i]][[j]][["example_sphe"]],
+              vast_format[[i]][[j]][["example_gaus"]], 
+vast_format[[i]][[j]][["example_cub"]],
+vast_format[[i]][[j]][["example_expo"]])
 
 example1<-c(example1, example)
+  }
+  example2<-c(example2,example1)
+ 
 }
 
 na<-list(NA)
-indices<-rep(na, nsize)
-imax<-4 # change depending of number of cores
-foreach(i = 1:imax) %dopar%
+indices<-rep(na, 40)
+imax<-2 # change depending of number of cores
+foreach(i = 1:2) %dopar%
   
 library(FishStatsUtils)
 library(VAST)
 library(doParallel)
-for(i in 1:nsize){
+for(i in 1:40){
   # Make settings (turning off bias.correct to save time for example)
   settings = make_settings( n_x=100, 
                             Region="user", 
@@ -104,7 +110,7 @@ for(i in 1:nsize){
   
 
   # Run model
-  fit = fit_model( settings=settings, 
+  fit = try(fit_model( settings=settings, 
                    Lat_i=example1[[i]][["lat"]], 
                    Lon_i=example1[[i]][["long"]], 
                    t_i=example1[[i]][["year"]], 
@@ -116,12 +122,12 @@ for(i in 1:nsize){
                    #v_i=example[[i]]$sampling_data[,'Vessel'] 
                    ,Aniso=FALSE, 
                    ObsModel=c("PosDist"=2, 'Link'=0),
-                   FieldConfig= c("Omega1"=1, "Epsilon1"=1, "Omega2"=1, "Epsilon2"=1))
+                   FieldConfig= c("Omega1"=0, "Epsilon1"=0, "Omega2"=0, "Epsilon2"=1)),TRUE)
                  
   
-  indices[[i]]<-fit$Report$Index_ctl[1,,1]
+  indices[[i]]<-try(fit$Report$Index_ctl[1,,1],TRUE)
 }
-save(indices, file="indices_1_48_DE.Rdata")
+#save(indices, file="indices_1_48_DE.Rdata")
 #save(indices, file="indices_49_96_DE.Rdata")
 #save(indices, file="indices_1_48_LP.Rdata")
 #save(indices, file="indices_49_96_LP.Rdata") #choose the good one
