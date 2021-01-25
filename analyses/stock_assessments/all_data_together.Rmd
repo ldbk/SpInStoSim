@@ -1,0 +1,32 @@
+---
+title: "group_all_data"
+output: html_document
+---
+```{r}
+load("~/DOC/AUTRE/git/SpInStoSim/data/indices/indices_essais_DE.Rdata")
+load("~/DOC/AUTRE/git/SpInStoSim/data/simu_stock/out100/0.6/lh/simsDE202010091026.RData")
+```
+
+```{r}
+x<-1
+database<-vector("list",4)
+fsize<-1
+size<-4
+#for (i in fsize:size){ #stock
+   stock_name<-names(sims[[i]])
+   database[[i]]<-vector("list",25)
+   #names(database[[i]]=stock_name)
+  for(j in 1:4){
+  it<-j
+  database[[i]][[j]][["catch"]]<-sims[[i]][["stock"]]@catch[1,,1,1,1,j]
+      database[[i]][[j]][["index_sphe"]]<-indices[[x]]
+      database[[i]][[j]][["index_gaus"]]<-indices[[x+1]]
+      database[[i]][[j]][["index_cub"]]<-indices[[x+2]]
+      database[[i]][[j]][["index_expo"]]<-indices[[x+3]]
+      database[[i]][[j]][["dummy_index"]]<-0
+      x<-x+4
+  }
+  
+#}
+```
+

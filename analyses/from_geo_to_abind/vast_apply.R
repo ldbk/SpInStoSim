@@ -1,13 +1,14 @@
 
 ncores<-2
-registerDoParallel(cores = ncores) # to change depending of your cores 
+registerDoParallel(cores = ncores) # to change depending of your cores # change 
 
 # load data set
 load("~/DOC/AUTRE/git/SpInStoSim/data/simu_geostat/SamplesDE_red.RData") #adapt the path 
 
 library(stringr)
 
-fsize<-1 #first stock to consider
+fsize<-1 #first stock to 
+fsize
 size<-10 #last stock to consider
 nsize<-10 #total number of stocks
 
@@ -84,7 +85,7 @@ example1<-c(example1, example)
 }
 
 na<-list(NA)
-nstocks<-4 # change depending of the number of stocks (stocks*iteration*vario)
+nstocks<-16 # change depending of the number of stocks (stocks*iteration*vario)
 indices<-rep(na, nstocks)
 imax<-2 # change depending of number of cores
 foreach(i = 1:2) %dopar%
@@ -126,8 +127,9 @@ for(i in 1:nstocks){
                    FieldConfig= c("Omega1"=0, "Epsilon1"=0, "Omega2"=0, "Epsilon2"=1)),TRUE)
                  
   
-  indices[[i]]<-try(fit$Report$Index_ctl[1,,1],TRUE)
+  indices[[i]]<-try(fit16$Report$Index_ctl[1,,1],TRUE)
 }
+save(indices, file="indices_essais_DE.Rdata")
 #save(indices, file="indices_1_48_DE.Rdata")
 #save(indices, file="indices_49_96_DE.Rdata")
 #save(indices, file="indices_1_48_LP.Rdata")
