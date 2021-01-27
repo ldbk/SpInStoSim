@@ -1,0 +1,121 @@
+---
+title: "spict"
+output: html_document
+---
+```{r}
+library(spict)
+library(ellipse)
+library(parallel)
+library(mgcv)
+library(rjags)
+library(coda)
+library(knitr)
+```
+
+Import file database+stock infos
+```{r}
+
+```
+
+```{r}
+table_outputs_Spict<- data.frame( stock_id=rep(NA,144000), year=rep(NA,144000), b_bmsy=rep(NA,144000),
+                                 b_bmsyUpper=rep(NA,144000), b_bmsyLower=rep(NA,144000), 
+                                 b_bmsy_iq25=rep(NA,144000), b_bmsy_iq75=rep(NA,144000), 
+                                 seed=rep(NA,144000), convergence=rep(NA,144000), n_iterations=rep(NA,144000),
+                                 effective_sample_size=rep(NA,144000), method_id=rep(NA,144000), 
+                                 catch=rep(NA,144000), stock=rep(NA,144000), 
+                                 bmsy_true=rep(NA,144000), harvest=rep(NA,144000), iter=rep(NA,144000),
+                                 LH=rep(NA,144000), ID=rep(NA,144000), ED=rep(NA,144000), 
+                                 SEL=rep(NA,144000), TS=rep(NA,144000), AR=rep(NA,144000),
+                                 UR=rep(NA,144000), b_bmsy_true=rep(NA,144000), sigmaR=rep(NA,144000), sigmaC=rep(NA,144000), vario=rep(NA,144000))
+
+varios<-c("sphe","gaux","cub","expo","dummy")
+
+nstock<-96
+nsimu<-25
+niter<-25
+nvario<-5
+nindex<-5
+```
+
+```{r}
+for (i in 1:nstock){
+ 
+  for (j in 1:nsimu){
+    
+    for(k in 1:nvario){
+    stock<-simsLP[[i]]
+    name_in<-stock$code
+    graphics.off() # close graphics windows from previous sessions
+    lmin<-lmin
+    lmax<-lmin+length( stock$catch@.Data[1,,1,1,1,j])-1
+    ### attribution inputs in the data frame 
+    table_outputs_Spict$year[lmin:lmax]<-seq(1, length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$stock_id[lmin:lmax]<-rep(name_in, length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$method_id[lmin:lmax]<-rep("Spict", length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$catch[lmin:lmax]<-stock$catch@.Data[,,,,,j]
+    table_outputs_Spict$stock[lmin:lmax]<-stock$biomass@.Data[,,,,,j]
+    table_outputs_Spict$bmsy_true[lmin:lmax]<-rep(stock$brp@refpts[2,5],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$harvest[lmin:lmax]<-rep(stock$brp@refpts[2,1],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$iter[lmin:lmax]<-rep(j,length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$LH[lmin:lmax]<-rep(stock$val[1],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$ID[lmin:lmax]<-rep(stock$val[2],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$ED[lmin:lmax]<-rep(stock$val[4],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$SEL[lmin:lmax]<-rep(stock$val[5],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$TS[lmin:lmax]<-rep(stock$val[7],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$AR[lmin:lmax]<-rep(stock$val[3],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$UR[lmin:lmax]<-rep(stock$val[6],length(stock$catch@.Data[1,,1,1,1,j]))
+    table_outputs_Spict$b_bmsy_true[lmin:lmax]<-table_outputs_Spict$stock[lmin:lmax]/table_outputs_Spict$bmsy_true[lmin:lmax]
+    table_outputs_Spict$vario=rep(varios,nstock*niter)
+  }
+  }
+}
+```
+
+
+```{r}
+for (i in 1:nstock){
+  
+for(j in 1:nit){
+  for (k in 1:nindex){
+    
+     
+pol$stock$obsC<-database[[1]][[1]][["catch"]]@.Data
+pol$stock$timeC<-seq(1,length(database[[1]][[1]][["catch"]]))
+pol$stock$obsI<-database[[1]][[1]][["index_sphe"]]
+pol$stock$timeI<-seq(1,length(database[[1]][[1]][["index_sphe"]]))
+  
+  res_stock <- fit.spict(pol$stock)
+  
+  
+  
+  lmin<-lmin
+  lmax<-lmin+length(pol$stock$obsC)-1
+  
+   table_outputs_Spict$b_bmsy[lmin:lmax]<-B.Bmsy
+   table_outputs_Spict$b_bmsyLower[lmin:lmax]<-lcl.B.Bmsy
+   table_outputs_Spict$b_bmsyUpper[lmin:lmax]<-ucl.B.Bmsy
+      
+  lmin<-lmax+1
+  }
+}
+}
+```
+
+```{r}
+windows()
+ress_stock <- calc.osa.resid(res_stock)
+plotspict.diagnostic(ress_stock)
+windows()
+plot(res_stock)
+windows()
+```
+
+```{r}
+ table_outputs_Spict$b_bmsy[lmin:lmax]<-B.Bmsy
+      table_outputs_Spict$b_bmsyLower[lmin:lmax]<-lcl.B.Bmsy
+      table_outputs_Spict$b_bmsyUpper[lmin:lmax]<-ucl.B.Bmsy
+```
+
+
+

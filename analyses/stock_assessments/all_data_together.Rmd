@@ -12,6 +12,7 @@ x<-1
 database<-vector("list",4)
 fsize<-1
 size<-4
+i<-1
 #for (i in fsize:size){ #stock
    stock_name<-names(sims[[i]])
    database[[i]]<-vector("list",25)
@@ -27,6 +28,8 @@ size<-4
       x<-x+4
   }
   
-#}
+#☺}
+   
+   #save(database, file="database.Rdata")
 ```
 
