@@ -121,9 +121,9 @@ parameters<-c("B", "Ipred","Csp", "r","Yinit","K","q",
 initialisation des trois chaînes 
 ```{r}
 ## inits needed for K, r, sigma2, tau2,q, Yinit
-inits1<-list("K"=as.vector(rep(40000,1)), "r"=rep(0.1,1),"q"=rep(0.0003,1), "Yinit"=rep(0.5,1),invSigma2=400, invTau2=rep(400,1))
-inits2<-list("K"=rep(50000,1), "r"=rep(0.105,1),"q"=rep(0.0003,1), "Yinit"=rep(0.5,1), invSigma2=400, invTau2=rep(400,1))
-inits3<-list("K"=rep(60000,1), "r"=rep(0.11,1),"q"=rep(0.0003,1), "Yinit"=rep(0.5,1), invSigma2=400, invTau2=rep(400,1))
+inits1<-list("K"=as.vector(rep(100,1)), "r"=rep(0.1,1),"q"=rep(0.0003,1), "Yinit"=rep(0.5,1),invSigma2=400, invTau2=rep(400,1))
+inits2<-list("K"=rep(200,1), "r"=rep(0.105,1),"q"=rep(0.0003,1), "Yinit"=rep(0.5,1), invSigma2=400, invTau2=rep(400,1))
+inits3<-list("K"=rep(300,1), "r"=rep(0.11,1),"q"=rep(0.0003,1), "Yinit"=rep(0.5,1), invSigma2=400, invTau2=rep(400,1))
 inits<-list(inits1,inits2,inits3)
 ```
 Initialisation du parallèle processing
@@ -143,7 +143,7 @@ clusterEvalQ(cl, setwd(getwd()))
 ```
 Mise en forme de l'ensemble des données nécessaire au modèle
 ```{r}
-cldata <- list(data=Data, params=parameters, model="1505bayes.txt", inits=inits2)
+cldata <- list(data=Data, params=parameters, model="1302_bayes.txt", inits=inits2)
 clusterExport(cl, "cldata")
 ```
 Ecriture du modèle
