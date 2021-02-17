@@ -1,0 +1,135 @@
+#####################################################################
+###         Modèle bayésien multispécifique                       ###
+### basé sur le modèle monospécifique de Florianne Marandel       ###
+###              Eloi Lezian 23/05/2016  		          ###
+###      revisé par V Trenkel 24.11.2016   		          ###
+### introduction d'un modèle pour captures par V Trenkel 5.1.2017 ###
+### rejets et débarquement différenciés M.Amelot 24.03.2020       ###    
+#####################################################################
+#début modèle
+model{  
+	
+#N : Nombre d'années totales
+#Nf : Nombre années d'indices
+#NbI : nombre d'espèces avec indices de biomasse
+#E : Nombre d'espèces
+#Nbq : Nombre de groupes de capturabilité
+#Grq : groupe de capturabilité de l'espèce
+#Np : Nombre d'année avec proportion des espèces dans débarquements
+  
+#######################
+####### PRIORS ########
+#######################
+
+r~dbeta(r_a,r_b)T(0.01,) #intrinsec growth rate 
+Yinit~dbeta(Yinit_a,Yinit_b)T(0.001,) #initial relative biomass
+K~dunif(Kinf,Ksup) #Carrying capacity 
+
+
+q~dunif(q_a,q_b) #catchability par group 
+
+
+## Process error
+invSigma2~dgamma(400,1) #prior for process error
+sigma<-sqrt(1/invSigma2) #standard deviation 
+sigma2<-1/invSigma2
+invTau2~dgamma(tau_a,tau_b) #observation error for biomass indices 
+tau2<-1/invTau2
+
+invTauPropC~dgamma(400,1) ## error in the proportion between species in landings
+TauPropC<-1/invTauPropC
+
+Ratio<-0.95
+
+#invTauPropL~dgamma(400,1) ## error in the proportion between species in landings
+#TauPropL<-1/invTauPropL
+#invTauPropD~dgamma(400,1) ### error in the proportion between species in discards
+#TauPropD<-1/invTauPropD
+
+ 	
+# l'inverse sert à la codage du paramètre pour les lois de distribution en langage BUGS
+
+########################## 
+### Dynamique du stock ###
+##########################
+
+##########################################
+## Changement de variable Y[t]=B[t]/K[e]##
+##########################################
+uplim<-1+3*sigma	# Superior limit for relative  Yields
+	
+Ymed[1]<-Yinit #Initial state for species e
+#isCensored[1] ~ dinterval(Y[1],uplim) # truncated distribution 
+#Y[1]~dnorm(Ymed[1],invSigma2)T(0,)
+
+#Ipred[1]<-q*Y[1]*K #Biomass indice 
+#B[1]<-K*Y[1] #biomasse
+
+
+
+
+###########################
+## Population Dynamics ####
+###########################
+
+for (t in 1:N) #modèle pour années 2 à N+1
+{
+
+Lmin[t]<-2*Cobs[t]/K
+isCensored[t] ~ dinterval(Y[t],uplim)
+Y[t]~dnorm(Ymed[t],invSigma2)T(Lmin[t],)
+ep[t]<-pow(0.2,2)+1
+invep[t]<-1/log(ep[t])
+LogCobs[t]<-log(Cobs[t])
+C[t]~dlnorm(LogCobs[t], invep[t])T(0,)
+
+#Csp[t]~dbin(Ratio,Cobs[t]) # Landings depending of the ratio between species and landings observed
+#Cesp[t]<-Csp[t]/K 
+
+
+Ymed[t+1]<-(r+1)*Y[t]-(r*Y[t])*Y[t]-C[t]/K # yield 
+
+#Y[t+1]~dnorm(Ymed[t+1],invSigma2)T(Lmin[t],)
+
+Ipred[t]<-q*Y[t]*K #biomass indices
+B[t]<-K*Y[t] #biomasse
+
+
+}
+
+##################################
+###Biomass indices simulation ####
+##################################
+ 
+mm<-mean(Ipred)
+ssd<-sd(Ipred)
+
+for (f in 1:N)   #années avec indices
+{
+StdIpred[f]<-(Ipred[f]-mm)/ssd
+} 
+
+
+
+
+#####################################
+## Observations indices de biomasse##
+#####################################
+
+
+for (f in 1:N)
+{	#début f
+
+I[f,]~dnorm(Ipred[f],invTau2)
+} #fin f
+
+
+
+#####################################################
+############### Reference points ####################
+#####################################################
+
+MSY<-r*K/4
+Bmsy<-K/2
+
+} 

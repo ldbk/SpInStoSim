@@ -29,7 +29,7 @@ table_outputs_Spict<- data.frame( stock_id=rep(NA,144000), year=rep(NA,144000), 
                                  SEL=rep(NA,144000), TS=rep(NA,144000), AR=rep(NA,144000),
                                  UR=rep(NA,144000), b_bmsy_true=rep(NA,144000), sigmaR=rep(NA,144000), sigmaC=rep(NA,144000), vario=rep(NA,144000))
 
-varios<-c("sphe","gaux","cub","expo","dummy")
+varios<-c("sphe","gaus","cub","expo","dummy")
 
 nstock<-96
 nsimu<-25

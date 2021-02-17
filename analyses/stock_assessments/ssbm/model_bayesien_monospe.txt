@@ -1,6 +1,5 @@
 #FULL run model
-model
-{
+model{
 #######PRIORS########
 #N: Total number of years
 #Nf: number of years with research vessel CPUE
