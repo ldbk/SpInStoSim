@@ -37,3 +37,14 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# truc lourd
+/data/Samples_red.RData
+/data/Samples_red.zip
+/data/SamplesDE_red.RData
+
+# truc vi
+*swp
+VAST_output/
+
+#fin ?

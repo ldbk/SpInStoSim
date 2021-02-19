@@ -1,0 +1,102 @@
+---
+title: "Naive indices"
+author: "Laurent"
+date: "11/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packagesoptions}
+library(dplyr)
+```
+
+## Framework
+
+Computation of naive indices.
+
+## Data
+
+Geostat simulations
+
+
+
+```{r data}
+library(raster)
+library(dplyr)
+load("../../data/SamplesDE_red.RData")
+#dim object : 96 list of 25 list of 4 data frame (Sample_sph, gauss cub and exp)
+#1 truc
+pipo<-Res.red[[2]][[1]]$Sample_spherical
+
+#some test
+oo<-do.call("rbind",Res.red)
+nomoo1<-rep(names(Res.red),each=25)
+nomoo2<-rep(1:25,25)
+nomoo<-paste(nomoo1,nomoo2)
+pp<-do.call("rbind",oo)
+nompp0<-rep(nomoo,each=4)
+nompp1<-rep(names(oo[[1]]),times=length(nomoo))
+nompp<-paste(nompp0,nompp1)
+qq<-data.table::rbindlist(pp)
+nomqq<-rep(nompp,each=nrow(pp[[1]]))
+#add simu id
+qq$id<-nomqq
+#remove rank and coordinates
+zz<-data.frame(qq[,4:64])
+#longer format
+zz<-zz%>%tidyr::pivot_longer(1:60)
+#a function to compute a basic indicator (sum A*sum(w)/sum(a))
+fct1<-function(a){
+	pipo<-data.frame(val=a,
+			 strate=rep(1:9,each=10),
+			 areastrate=rep(c(400,1200,400,1200,3600,1200,400,1200,400),each=10),
+			 areaswept=rep(1,90))
+	#indices calculus
+	pipo1<-pipo%>%group_by(strate)%>%summarise(ws=sum(val),areas=sum(areaswept),areastrate=unique(areastrate))%>%ungroup()
+	i1<-sum(pipo1$areastrate*pipo1$ws/pipo1$areas)
+	return(i1)
+}
+
+#group_by and summarise
+#pipo<-zz%>%group_by(id,name)%>% summarise(i1=fct1(value))
+library(data.table)
+pipo<-data.table(zz)[,.(i1=fct1(value)),keyby=.(id,name)]
+#cut name
+pipo<-pipo%>%tidyr::separate(id,sep=" ",into=c("stock","rep","geotype"))
+
+#relist...
+idstock<-unique(pipo$stock)
+idrep<-unique(pipo$rep)
+idgeotype<-unique(pipo$geotype)
+rez<-vector("list",length(idstock))
+for(i in 1:length(idstock)){
+	rez[[i]]<-vector("list",length(idrep))
+	for(j in 1:length(idrep)){
+		rez[[i]][[j]]<-vector("list",length(idgeotype))
+		for(k in 1:length(idgeotype)){
+			print(paste(i,j,k))
+			#i<-j<-k<-1
+			test<-pipo$stock==idstock[i]&pipo$rep==idrep[j]&pipo$geotype==idgeotype[k]
+			pipotmp<-pipo[test,c("name","i1")]
+			pipotmp$year<-as.numeric(unlist(lapply(strsplit(pipotmp$name,".S"),"[[",2)))
+			pipotmp<-pipotmp[order(pipotmp$year),c("year","i1")]
+			rez[[i]][[j]][[k]]<-pipotmp
+		}
+	}
+}
+#names
+uu<-rez
+rez<-uu
+names(rez)<-idstock
+for(i in 1:length(idstock)){
+	names(rez[[i]])<-idrep
+	for(j in 1:length(idrep)){
+		names(rez[[i]][[j]])<-idgeotype
+	}
+}
+saveRDS(rez,file="../../data/indices/naive_indices.rds")
+
+```
