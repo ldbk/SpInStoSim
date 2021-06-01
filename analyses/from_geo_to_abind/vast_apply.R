@@ -1,6 +1,8 @@
+library(foreach)
+library(doParallel)
+library(FishStatsUtils)
+library(VAST)
 
-ncores<-2
-registerDoParallel(cores = ncores) # to change depending of your cores # change 
 
 # load data set
 #load("~data/simu_geostat/SamplesDE_red.RData") #adapt the path 
@@ -9,8 +11,8 @@ library(stringr)
 
 fsize<-1 #first stock to 
 fsize
-size<-10 #last stock to consider
-nsize<-10 #total number of stocks
+size<-96 #last stock to consider
+nsize<-96 #total number of stocks
 
 vast_format<-vector("list",nsize)
 
@@ -85,15 +87,15 @@ example1<-c(example1, example)
 }
 
 
-library(FishStatsUtils)
-library(VAST)
-library(doParallel)
+
 na<-list(NA)
-nstocks<-40 # change depending of the number of stocks (stocks*iteration*vario)
+nstocks<-4 # change depending of the number of stocks (stocks*iteration*vario)
 indices<-rep(na, nstocks)
 imax<-2 # change depending of number of cores
-foreach(i = 1:2) %dopar%
-for(i in 1:nstocks){
+cl=parallel::makeCluster(4,type="PSOCK") 
+registerDoParallel(cl)
+tictoc::tic()
+indices = foreach(i=1:nstocks,.packages=c("VAST","FishStatsUtils")) %dopar% {
   # Make settings (turning off bias.correct to save time for example)
   settings = make_settings( n_x=100, 
                             Region="user", 
@@ -112,7 +114,7 @@ for(i in 1:nstocks){
   
 
   # Run model
-  fit16 = try(fit_model( settings=settings, 
+  fit16 = try(fit_model(settings=settings, 
                    Lat_i=example2[[i+50]][["lat"]], 
                    Lon_i=example2[[i+50]][["long"]], 
                    t_i=example2[[i+50]][["year"]], 
@@ -126,9 +128,10 @@ for(i in 1:nstocks){
                    ObsModel=c("PosDist"=2, 'Link'=0),
                    FieldConfig= c("Omega1"=0, "Epsilon1"=0, "Omega2"=0, "Epsilon2"=1)),TRUE)
                  
-  
-  indices[[i]]<-try(fit16$Report$Index_ctl[1,,1],TRUE)
+  #print(i)
+  indices<-try(fit16$Report$Index_ctl[1,,1],TRUE)
 }
+tictoc::toc()
 save(indices, file="indices_essais_DE_51-90.Rdata")
 #save(indices, file="indices_1_48_DE.Rdata")
 #save(indices, file="indices_49_96_DE.Rdata")
