@@ -3,8 +3,8 @@ ncores<-2
 registerDoParallel(cores = ncores) # to change depending of your cores # change 
 
 # load data set
-load("~/DOC/AUTRE/git/SpInStoSim/data/simu_geostat/SamplesDE_red.RData") #adapt the path 
-
+#load("~data/simu_geostat/SamplesDE_red.RData") #adapt the path 
+load("C:/git/SpInStoSim/data/simu_geostat/SamplesDE_red.RData")
 library(stringr)
 
 fsize<-1 #first stock to 
@@ -84,15 +84,15 @@ example1<-c(example1, example)
  
 }
 
-na<-list(NA)
-nstocks<-16 # change depending of the number of stocks (stocks*iteration*vario)
-indices<-rep(na, nstocks)
-imax<-2 # change depending of number of cores
-foreach(i = 1:2) %dopar%
-  
+
 library(FishStatsUtils)
 library(VAST)
 library(doParallel)
+na<-list(NA)
+nstocks<-40 # change depending of the number of stocks (stocks*iteration*vario)
+indices<-rep(na, nstocks)
+imax<-2 # change depending of number of cores
+foreach(i = 1:2) %dopar%
 for(i in 1:nstocks){
   # Make settings (turning off bias.correct to save time for example)
   settings = make_settings( n_x=100, 
@@ -103,8 +103,8 @@ for(i in 1:nstocks){
   
   m_ll<-matrix(data=NA, nrow=90, ncol=3)
  # m_ll<-matrix(data=NA, nrow=90, ncol=2)
-  m_ll[,1]<-example2[[i]][["long"]][1:90]
-  m_ll[,2]<-example2[[i]][["lat"]][1:90]
+  m_ll[,1]<-example2[[i+50]][["long"]][1:90]
+  m_ll[,2]<-example2[[i+50]][["lat"]][1:90]
   m_ll[,3]<-rep(c(400,1200,400,1200,3600,1200,400,1200,400)/10, each=10)
   m_ll[,3]<-rep(1,90)
   colnames(m_ll)<-c('Lat', 'Lon','Area_km2')
@@ -113,12 +113,12 @@ for(i in 1:nstocks){
 
   # Run model
   fit16 = try(fit_model( settings=settings, 
-                   Lat_i=example2[[i]][["lat"]], 
-                   Lon_i=example2[[i]][["long"]], 
-                   t_i=example1[[i]][["year"]], 
-                   c_i=rep(0,90*length(unique(example1[[i]][["year"]]))), 
-                   b_i=example2[[i]][["survey"]], 
-                   a_i=example2[[i]][["s_a"]]
+                   Lat_i=example2[[i+50]][["lat"]], 
+                   Lon_i=example2[[i+50]][["long"]], 
+                   t_i=example2[[i+50]][["year"]], 
+                   c_i=rep(0,90*length(unique(example2[[i+50]][["year"]]))), 
+                   b_i=example2[[i+50]][["survey"]], 
+                   a_i=example2[[i+50]][["s_a"]]
                    #,observations_LL =m_ll
                    ,input_grid=m_ll
                    #v_i=example[[i]]$sampling_data[,'Vessel'] 
@@ -129,7 +129,7 @@ for(i in 1:nstocks){
   
   indices[[i]]<-try(fit16$Report$Index_ctl[1,,1],TRUE)
 }
-save(indices, file="indices_essais_DE.Rdata")
+save(indices, file="indices_essais_DE_51-90.Rdata")
 #save(indices, file="indices_1_48_DE.Rdata")
 #save(indices, file="indices_49_96_DE.Rdata")
 #save(indices, file="indices_1_48_LP.Rdata")
